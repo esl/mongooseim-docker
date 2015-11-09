@@ -3,6 +3,8 @@ MAINTAINER Radek Szymczyszyn <radoslaw.szymczyszyn@erlang-solutions.com>
 
 # required packages
 RUN apt-get update && apt-get install -y \
+    bash \
+    bash-completion \
     wget \
     git \
     make \
@@ -13,9 +15,10 @@ RUN apt-get update && apt-get install -y \
     libncurses5-dev \
     libssl-dev \
     libexpat1-dev \
-    libpam0g-dev
+    libpam0g-dev &&\
+    apt-get clean
 
-COPY ./fs/build.sh /build.sh
+COPY ./builder/build.sh /build.sh
 VOLUME /builds
 
-ENTRYPOINT ["/build.sh"]
+CMD ["/sbin/my_init"]
