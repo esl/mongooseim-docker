@@ -6,7 +6,4 @@ JQ_IP_AND_NAME='.[0].NetworkSettings.Networks.bridge.IPAddress,.[0].Name'
 [ x"" = x"$PROJECT" ] && echo "PROJECT not specified" && exit 1
 
 docker ps --format "{{.ID}} {{.Names}}" | awk '$2'" ~ /${PROJECT}-/ "'{print $1}' > /tmp/member_ids
-while read MEMBER_ID; do
-    HOSTS_LINE=$(docker inspect ${MEMBER_ID} | jq ${JQ_IP_AND_NAME} | sed -e 's/[\/"]//g')
-    echo $HOSTS_LINE
-done < /tmp/member_ids
+./docker-to-hosts-line < /tmp/member_ids

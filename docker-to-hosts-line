@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+JQ_IP_AND_NAME='.[0].NetworkSettings.Networks.bridge.IPAddress,.[0].Name'
+
+while read MEMBER_ID; do
+    HOSTS_LINE=$(docker inspect ${MEMBER_ID} | jq ${JQ_IP_AND_NAME} | sed -e 's/[\/"]//g')
+    echo $HOSTS_LINE
+done
