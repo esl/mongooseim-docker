@@ -53,7 +53,7 @@ member.create:
 	-mkdir -p ${VOLUMES}/${MEMBER}
 	-rm -rf ${VOLUMES}/${MEMBER}/mongooseim/Mnesia*
 	cp ${BUILDS}/${MEMBER_TGZ} ${VOLUMES}/${MEMBER}/mongooseim.tar.gz
-	docker create --name ${MEMBER} -h ${MEMBER} -P \
+	docker create --name ${MEMBER} -h ${MEMBER} -P -t \
 		-v ${VOLUMES}/${MEMBER}:/member ${MEMBER_BASE}
 	./generate-hosts ${PROJECT} > ${VOLUMES}/${MEMBER}/hosts
 	docker start ${MEMBER}
