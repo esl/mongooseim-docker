@@ -21,6 +21,9 @@ echo "vm.args:"
 sed -i -e "s/-sname.*$/-sname ${NODE}/" /member/mongooseim/etc/vm.args
 cat /member/mongooseim/etc/vm.args
 
+# if there's a predefined config file available, use it
+[ -f "/member/ejabberd.cfg" ] && cp "/member/ejabberd.cfg" /member/mongooseim/etc/
+
 #file "${MNESIA_DIR}/schema.DAT"
 
 CLUSTERING_RESULT=0
