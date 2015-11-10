@@ -18,11 +18,10 @@ RUN apt-get update && apt-get install -y \
     libpam0g-dev &&\
     apt-get clean
 
-COPY ./member/deploy.sh /deploy.sh
 COPY ./member/clusterize /clusterize
 COPY ./member/start.sh /start.sh
 VOLUME /member
 
-EXPOSE 4369 5222 5280 9100
+EXPOSE 4369 5222 5269 5280 9100
 
-CMD ["/sbin/my_init"]
+ENTRYPOINT ["/start.sh"]
