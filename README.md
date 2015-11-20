@@ -7,6 +7,8 @@ Specifically designed for enterprise purposes,
 it is fault-tolerant, can utilize resources of multiple clustered machines and easily scale in need of more capacity (by just adding a box/VM).
 Its home at GitHub is http://github.com/esl/MongooseIM.
 
+This work, though it's not reflected in git history,
+was bootstrapped from Paweł Pikuła's (@ppikula) https://github.com/ppikula/MongooseIM-docker/.
 
 ## Quick start guide
 
