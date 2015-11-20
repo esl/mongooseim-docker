@@ -168,7 +168,6 @@ Let's check it:
 ```
 $ docker exec -it myproject-mongooseim-1 /member/mongooseim/bin/mongooseimctl mnesia running_db_nodes
 ['mongooseim@myproject-mongooseim-2','mongooseim@myproject-mongooseim-1']
-11:52:46 erszcz @ x4 : ~/work/lavrin/mongooseim-docker (master *)
 $ docker exec -it myproject-mongooseim-2 /member/mongooseim/bin/mongooseimctl mnesia running_db_nodes
 ['mongooseim@myproject-mongooseim-1','mongooseim@myproject-mongooseim-2']
 ```
