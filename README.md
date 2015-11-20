@@ -2,8 +2,9 @@
 
 MongooseIM server version 1.5.  
 
-MongooseIM is Erlang Solutions' robust and efficient XMPP server aimed at large installations. Specifically designed for enterprise purposes, it is fault-tolerant, can utilize resources of multiple clustered machines and easily scale in need of more capacity (by just adding a box/VM). It provides support for WebSockets and reimplemented BOSH.
-
+MongooseIM is Erlang Solutions' robust and efficient XMPP server aimed at large installations.
+Specifically designed for enterprise purposes,
+it is fault-tolerant, can utilize resources of multiple clustered machines and easily scale in need of more capacity (by just adding a box/VM).
 Its home at GitHub is http://github.com/esl/MongooseIM.
 
 
