@@ -8,7 +8,7 @@ it is fault-tolerant, can utilize resources of multiple clustered machines and e
 Its home at GitHub is http://github.com/esl/MongooseIM.
 
 This work, though it's not reflected in git history,
-was bootstrapped from Paweł Pikuła's (@ppikula) https://github.com/ppikula/MongooseIM-docker/.
+was bootstrapped from Paweł Pikuła's (@ppikula) great https://github.com/ppikula/MongooseIM-docker/.
 
 ## Quick start guide
 
@@ -55,6 +55,12 @@ The columns are:
     ```
     custom_build_script.sh myproject2 3414588 https://git.repo.address.com custom_build_script.sh
     ```
+
+To use a valid MongooseIM repo and commit we'll use this `specs` file:
+
+```
+myproject 34097d5 https://github.com/esl/mongooseim
+```
 
 To build a MongooseIM tarball run:
 
@@ -146,7 +152,7 @@ Escape character is '^]'.
 Success! MongooseIM is accepting XMPP connections.
 
 
-### Creating MongooseIM containers
+### Setting up a cluster
 
 Let's start another cluster member:
 
@@ -168,6 +174,27 @@ $ docker exec -it myproject-mongooseim-2 /member/mongooseim/bin/mongooseimctl mn
 ```
 
 Tadaa! There you have a brand new shiny cluster running.
+
+
+### Adding backends
+
+There are plenty of ready to use Docker images with databases
+or external services you might want to integrate with the cluster.
+
+For example, I'm running a [stock `postgres:9.4`](https://hub.docker.com/_/postgres/) container,
+which thanks to prefixing its name with `PROJECT` (as defined before) is automatically picked
+up by the `member.create` rule:
+
+```
+$ docker ps | grip postgres
+ffac07900f4f  postgres:9.4  "/docker-entrypoint.s"  9 days ago  Up 9 days  0.0.0.0:32768->5432/  myproject-postgres
+```
+
+Just make sure to start it before you create your cluster members,
+as that's when the `hosts` files are generated.
+See Makefile rule `member.create` and script `generate-hosts`
+if you need to troubleshoot this mechanism.
+Don't forget to tweak your `ejabberd.cfg` to connect with the services you set up!
 
 
 ## ToDo
