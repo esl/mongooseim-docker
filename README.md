@@ -179,21 +179,36 @@ Tadaa! There you have a brand new shiny cluster running.
 
 There are plenty of ready to use Docker images with databases
 or external services you might want to integrate with the cluster.
-
-For example, I'm running a [stock `postgres:9.4`](https://hub.docker.com/_/postgres/) container,
-which thanks to prefixing its name with `PROJECT` (as defined before) is automatically picked
-up by the `member.create` rule:
+For example, I'm running a [stock `postgres:9.4`](https://hub.docker.com/_/postgres/) container.
+Thanks to prefixing its name with `PROJECT` (as defined before),
+it is automatically picked up by the `member.create` rule:
 
 ```
 $ docker ps | grip postgres
 ffac07900f4f  postgres:9.4  "/docker-entrypoint.s"  9 days ago  Up 9 days  0.0.0.0:32768->5432/  myproject-postgres
 ```
 
+The discovered hosts for respective cluster members are:
+
+```
+$ cat examples/myproject-mongooseim-1/hosts
+172.17.0.2 myproject-postgres
+$ cat examples/myproject-mongooseim-2/hosts
+172.17.0.2 myproject-postgres
+172.17.0.3 myproject-mongooseim-1
+```
+
 Just make sure to start it before you create your cluster members,
 as that's when the `hosts` files are generated.
 See Makefile rule `member.create` and script `generate-hosts`
 if you need to troubleshoot this mechanism.
+The `hosts` file is appended to member's `/etc/hosts` in `member/start.sh`.
 Don't forget to tweak your `ejabberd.cfg` to connect with the services you set up!
+For example, like this in case of the PostgreSQL container mentioned above:
+
+```
+{odbc_server, {pgsql, "myproject-postgres", "postgres", "postgres", "%YOUR_PASSWORD%"}}.
+```
 
 
 ## ToDo
