@@ -23,9 +23,9 @@ builder.destroy:
 #    make ${MEMBER}-1
 #    make ${MEMBER}-2
 
-cluster-2.destroy:
-	make member.destroy MEMBER=${MEMBER}-1
-	make member.destroy MEMBER=${MEMBER}-2
+#cluster-2.destroy:
+#    make member.destroy MEMBER=${MEMBER}-1
+#    make member.destroy MEMBER=${MEMBER}-2
 
 #
 # Private
@@ -48,6 +48,7 @@ builder.shell:
 member.build:
 	docker build -f Dockerfile.member -t ${MEMBER} .
 
+# TODO: temporary
 # MEMBER here is like test-mongooseim-1, test-mongooseim-2, ...
 member.create:
 	-mkdir -p ${VOLUMES}/${MEMBER}
