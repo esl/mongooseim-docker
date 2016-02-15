@@ -45,7 +45,7 @@ else
 fi
 
 if [ ${CLUSTERING_RESULT} == 0 ]; then
-    echo "Clnodustered ${NODE} with ${CLUSTER_NODE}"
+    echo "Clustered ${NODE} with ${CLUSTER_NODE}"
     PATH="/member/mongooseim/bin:${PATH}"
     if [ "$#" -ne 1 ]; then
         mongooseim live --noshell -noinput +Bd  -mnesia dir \"${MNESIA_DIR}\"
