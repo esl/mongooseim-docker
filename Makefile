@@ -4,6 +4,7 @@ PROJECT 	?= test
 VOLUMES 	?= $(shell pwd)/examples
 BUILDS 		?= ${VOLUMES}/builds
 BUILDER 	?= ${PROJECT}-builder
+HAPROXY 	?= ${PROJECT}-haproxy
 MEMBER  	?= ${PROJECT}-mongooseim
 MEMBER_BASE     ?= ${PROJECT}-mongooseim
 MEMBER_TGZ      ?= mongooseim-esl-34097d5-2015-11-09_135646.tar.gz
@@ -85,3 +86,12 @@ member.start:
 member.destroy:
 	-docker stop ${MEMBER}
 	-docker rm ${MEMBER}
+
+haproxy.build:
+	docker build -f Dockerfile.haproxy -t ${HAPROXY} .
+
+haproxy.create:
+	docker create --name ${HAPROXY} -h ${HAPROXY} -p 5222:5222 -t \
+		--dns=${DNS_IP} --dns-search=. \
+		${HAPROXY}
+	docker start ${HAPROXY}
