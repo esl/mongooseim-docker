@@ -63,7 +63,9 @@ member.create:
 	-rm -rf ${VOLUMES}/${MEMBER}/mongooseim/Mnesia*
 	cp ${BUILDS}/${MEMBER_TGZ} ${VOLUMES}/${MEMBER}/mongooseim.tar.gz
 	docker create --name ${MEMBER} -h ${MEMBER} -P -t \
-		-v ${VOLUMES}/${MEMBER}:/member --dns=${DNS_IP} ${MEMBER_BASE}
+		-v ${VOLUMES}/${MEMBER}:/member \
+		--dns=${DNS_IP} --dns-search=. \
+		${MEMBER_BASE}
 	#./generate-hosts ${PROJECT} > ${VOLUMES}/${MEMBER}/hosts
 	docker start ${MEMBER}
 
