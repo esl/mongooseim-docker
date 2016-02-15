@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
 #set -x
+cd /member
+tar xfz mongooseim.tar.gz || (echo "can't untar release" && exit 1)
+[ -f /member/hosts ] && cat /member/hosts >> /etc/hosts
+cd -
 
 NODE=mongooseim@${HOSTNAME}
 NODETYPE=sname:${NODE}
@@ -10,12 +14,6 @@ ROOT_DIR=/member/mongooseim
 MNESIA_DIR=${ROOT_DIR}/Mnesia.${NODE}
 EPMD=`find ${ROOT_DIR} -name epmd`
 ESCRIPT=`find ${ROOT_DIR} -name escript`
-
-
-cd /member
-tar xfz mongooseim.tar.gz || (echo "can't untar release" && exit 1)
-[ -f /member/hosts ] && cat /member/hosts >> /etc/hosts
-cd -
 
 echo "hosts:"
 cat /etc/hosts
