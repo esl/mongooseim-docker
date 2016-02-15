@@ -1,4 +1,4 @@
-FROM astachurski/docker-gocd
+FROM phusion/baseimage
 MAINTAINER Radek Szymczyszyn <radoslaw.szymczyszyn@erlang-solutions.com>
 
 # required packages

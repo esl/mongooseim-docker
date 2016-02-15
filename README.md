@@ -107,12 +107,10 @@ We're preparing a 2 node cluster hence two directories (`myproject-mongooseim-X`
 The only file we need to place there is `ejabberd.cfg` (a predefined config file).
 The rest is actually created when we build our cluster member containers.
 
-We create a cluster member image with (it's not hidden inside the Makefile yet,
-so pay attention to make the `*-mongooseim` part match your `PROJECT`
-definition from the previous steps):
+We create a cluster member image with 
 
 ```
-docker build -f Dockerfile.member -t myproject-mongooseim .
+make PROJECT=myproject member.build
 ```
 
 Then we can create a member container:

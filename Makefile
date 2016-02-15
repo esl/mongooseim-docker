@@ -5,10 +5,10 @@ VOLUMES 	?= $(shell pwd)/examples
 BUILDS 		?= ${VOLUMES}/builds
 BUILDER 	?= ${PROJECT}-builder
 MEMBER  	?= ${PROJECT}-mongooseim
-MEMBER_BASE ?= ${PROJECT}-mongooseim
-MEMBER_TGZ  ?= mongooseim-esl-34097d5-2015-11-09_135646.tar.gz
-
-#
+MEMBER_BASE     ?= ${PROJECT}-mongooseim
+MEMBER_TGZ      ?= mongooseim-esl-34097d5-2015-11-09_135646.tar.gz
+DNS	        = ${PROJECT}-resolvable
+DNS_IP	        = $(shell echo ${DNS} | ./docker-to-hosts-line | cut -d' ' -f1)
 # Public
 #
 
@@ -30,6 +30,14 @@ builder.destroy:
 #
 # Private
 #
+dns.create:
+	docker create --hostname ${DNS} --name ${DNS} \
+        -v /var/run/docker.sock:/tmp/docker.sock mgood/resolvable
+dns.start:
+	docker start ${DNS}
+
+dns.ip:
+	@echo ${DNS_IP}
 
 builder.build:
 	docker build -f Dockerfile.builder -t ${BUILDER} .
@@ -46,7 +54,7 @@ builder.shell:
 
 # MEMBER here is like test-mongooseim, i.e. no numeric suffix
 member.build:
-	docker build -f Dockerfile.member -t ${MEMBER} .
+	docker build -f Dockerfile.member -t ${MEMBER_BASE} .
 
 # TODO: temporary
 # MEMBER here is like test-mongooseim-1, test-mongooseim-2, ...
@@ -55,8 +63,8 @@ member.create:
 	-rm -rf ${VOLUMES}/${MEMBER}/mongooseim/Mnesia*
 	cp ${BUILDS}/${MEMBER_TGZ} ${VOLUMES}/${MEMBER}/mongooseim.tar.gz
 	docker create --name ${MEMBER} -h ${MEMBER} -P -t \
-		-v ${VOLUMES}/${MEMBER}:/member ${MEMBER_BASE}
-	./generate-hosts ${PROJECT} > ${VOLUMES}/${MEMBER}/hosts
+		-v ${VOLUMES}/${MEMBER}:/member --dns=${DNS_IP} ${MEMBER_BASE}
+	#./generate-hosts ${PROJECT} > ${VOLUMES}/${MEMBER}/hosts
 	docker start ${MEMBER}
 
 # TODO: unfinished!
@@ -67,6 +75,7 @@ member.create:
 #        ${MEMBER_BASE}
 
 # MEMBER here is like test-mongooseim-1, test-mongooseim-2, ...
+
 member.start:
 	docker start ${MEMBER}
 
