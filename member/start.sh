@@ -6,7 +6,11 @@ NODE=mongooseim@${HOSTNAME}
 NODETYPE=sname:${NODE}
 CLUSTER_NODE=mongooseim@${HOSTNAME%-?}-1
 CLUSTER_COOKIE=ejabberd
-MNESIA_DIR=/member/mongooseim/Mnesia.${NODE}
+ROOT_DIR=/member/mongooseim
+MNESIA_DIR=${ROOT_DIR}/Mnesia.${NODE}
+EPMD=`find ${ROOT_DIR} -name epmd`
+ESCRIPT=`find ${ROOT_DIR} -name escript`
+
 
 cd /member
 tar xfz mongooseim.tar.gz || (echo "can't untar release" && exit 1)
@@ -33,15 +37,15 @@ if [ x"${HOSTNAME##*-}" = x"1" ]; then
 elif [ ! -f "${MNESIA_DIR}/schema.DAT" ]; then
     echo "MongooseIM node ${NODE} joining ${CLUSTER_NODE}"
     # epmd must be running for escript to use distribution
-    epmd -daemon
-    escript /clusterize ${NODETYPE} ${CLUSTER_COOKIE} ${CLUSTER_NODE} ${MNESIA_DIR}
+    ${EPMD} -daemon
+    ${ESCRIPT} /clusterize ${NODETYPE} ${CLUSTER_COOKIE} ${CLUSTER_NODE} ${MNESIA_DIR}
     CLUSTERING_RESULT=$?
 else
     echo "MongooseIM node ${NODE} already clustered"
 fi
 
 if [ ${CLUSTERING_RESULT} == 0 ]; then
-    echo "Clustered ${NODE} with ${CLUSTER_NODE}"
+    echo "Clnodustered ${NODE} with ${CLUSTER_NODE}"
     PATH="/member/mongooseim/bin:${PATH}"
     if [ "$#" -ne 1 ]; then
         mongooseim live --noshell -noinput +Bd  -mnesia dir \"${MNESIA_DIR}\"
