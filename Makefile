@@ -98,6 +98,9 @@ haproxy.create:
 		${HAPROXY}
 	docker start ${HAPROXY}
 
+graphite.build:
+	docker build -f Dockerfile.graphite -t ${GRAPHITE} .
+
 graphite.create:
 	docker create \
 		--name ${GRAPHITE} -h ${GRAPHITE} \
@@ -108,7 +111,7 @@ graphite.create:
 		-p 8126:8126 \
 		-v ${GRAPHITE_DATA}:/opt/graphite/storage \
 		--dns=${DNS_IP} --dns-search=. \
-		hopsoft/graphite-statsd
+		${GRAPHITE}
 	docker start ${GRAPHITE}
 
 graphite.start:
