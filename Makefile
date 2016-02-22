@@ -8,6 +8,8 @@ HAPROXY 	?= ${PROJECT}-haproxy
 MEMBER  	?= ${PROJECT}-mongooseim
 GRAPHITE    ?= ${PROJECT}-graphite
 GRAPHITE_DATA ?= ${PROJECT}-graphite-data
+GRAFANA     ?= ${PROJECT}-grafana
+GRAFANA_DATA ?= ${PROJECT}-grafana-data
 MEMBER_BASE     ?= ${PROJECT}-mongooseim
 MEMBER_TGZ      ?= mongooseim-esl-34097d5-2015-11-09_135646.tar.gz
 DNS	        = ${PROJECT}-resolvable
@@ -116,3 +118,15 @@ graphite.create:
 
 graphite.start:
 	docker start ${GRAPHITE}
+
+grafana.create:
+	docker create \
+		--name ${GRAFANA} -h ${GRAFANA} \
+		--dns=${DNS_IP} --dns-search=. \
+		-p 3000:3000 \
+		-v ${GRAFANA_DATA}:/var/lib/grafana \
+		grafana/grafana
+	docker start ${GRAFANA}
+
+grafana.start:
+	docker start ${GRAFANA}
