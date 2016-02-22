@@ -6,6 +6,8 @@ BUILDS 		?= ${VOLUMES}/builds
 BUILDER 	?= ${PROJECT}-builder
 HAPROXY 	?= ${PROJECT}-haproxy
 MEMBER  	?= ${PROJECT}-mongooseim
+GRAPHITE    ?= ${PROJECT}-graphite
+GRAPHITE_DATA ?= ${PROJECT}-graphite-data
 MEMBER_BASE     ?= ${PROJECT}-mongooseim
 MEMBER_TGZ      ?= mongooseim-esl-34097d5-2015-11-09_135646.tar.gz
 DNS	        = ${PROJECT}-resolvable
@@ -95,3 +97,19 @@ haproxy.create:
 		--dns=${DNS_IP} --dns-search=. \
 		${HAPROXY}
 	docker start ${HAPROXY}
+
+graphite.create:
+	docker create \
+		--name ${GRAPHITE} -h ${GRAPHITE} \
+		-p 8080:80 \
+		-p 2003-2004:2003-2004 \
+		-p 2023-2024:2023-2024 \
+		-p 8125:8125/udp \
+		-p 8126:8126 \
+		-v ${GRAPHITE_DATA}:/opt/graphite/storage \
+		--dns=${DNS_IP} --dns-search=. \
+		hopsoft/graphite-statsd
+	docker start ${GRAPHITE}
+
+graphite.start:
+	docker start ${GRAPHITE}
