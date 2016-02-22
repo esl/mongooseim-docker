@@ -91,7 +91,7 @@ haproxy.build:
 	docker build -f Dockerfile.haproxy -t ${HAPROXY} .
 
 haproxy.create:
-	docker create --name ${HAPROXY} -h ${HAPROXY} -p 5222:5222 -t \
+	docker create --name ${HAPROXY} -h ${HAPROXY} -p 5222:5222 -p 9000:9000 -t \
 		--dns=${DNS_IP} --dns-search=. \
 		${HAPROXY}
 	docker start ${HAPROXY}

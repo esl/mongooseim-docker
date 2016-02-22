@@ -1,4 +1,4 @@
 FROM haproxy:1.6
 COPY haproxy/haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
 
-EXPOSE 5222
+EXPOSE 5222 9000
