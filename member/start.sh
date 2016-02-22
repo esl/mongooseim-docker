@@ -18,13 +18,17 @@ ESCRIPT=`find ${ROOT_DIR} -name escript`
 echo "hosts:"
 cat /etc/hosts
 
+# if there are predefined config files available, use them
+FILES=( "/member/ejabberd.cfg" "/member/app.config" "/member/vm.args" )
+for file in "${FILES[@]}"
+do
+    [ -f "${file}" ] && cp "${file}" /member/mongooseim/etc/
+done
+
 # make sure proper node name is used
 echo "vm.args:"
 sed -i -e "s/-sname.*$/-sname ${NODE}/" /member/mongooseim/etc/vm.args
 cat /member/mongooseim/etc/vm.args
-
-# if there's a predefined config file available, use it
-[ -f "/member/ejabberd.cfg" ] && cp "/member/ejabberd.cfg" /member/mongooseim/etc/
 
 #file "${MNESIA_DIR}/schema.DAT"
 
