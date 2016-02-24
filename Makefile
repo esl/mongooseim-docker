@@ -5,6 +5,7 @@ VOLUMES 	?= $(shell pwd)/examples
 BUILDS 		?= ${VOLUMES}/builds
 BUILDER 	?= ${PROJECT}-builder
 HAPROXY 	?= ${PROJECT}-haproxy
+HAPROXY_CONFIG ?= $(shell pwd)/haproxy/haproxy.cfg
 MEMBER  	?= ${PROJECT}-mongooseim
 GRAPHITE    ?= ${PROJECT}-graphite
 GRAPHITE_DATA ?= ${PROJECT}-graphite-data
@@ -36,10 +37,16 @@ builder.destroy:
 # Private
 #
 dns.create:
-	docker create --hostname ${DNS} --name ${DNS} \
+	docker create --hostname ${DNS} \
+		--name ${DNS} \
+		--label=${PROJECT} \
         -v /var/run/docker.sock:/tmp/docker.sock mgood/resolvable
 dns.start:
 	docker start ${DNS}
+
+dns.destroy:
+	-docker stop ${DNS}
+	-docker rm ${DNS}
 
 dns.ip:
 	@echo ${DNS_IP}
@@ -69,6 +76,7 @@ member.create:
 	cp ${BUILDS}/${MEMBER_TGZ} ${VOLUMES}/${MEMBER}/mongooseim.tar.gz
 	docker create --name ${MEMBER} -h ${MEMBER} -P -t \
 		-v ${VOLUMES}/${MEMBER}:/member \
+		--label=${PROJECT} \
 		--dns=${DNS_IP} --dns-search=. \
 		${MEMBER_BASE}
 	#./generate-hosts ${PROJECT} > ${VOLUMES}/${MEMBER}/hosts
@@ -95,10 +103,17 @@ haproxy.build:
 	docker build -f Dockerfile.haproxy -t ${HAPROXY} .
 
 haproxy.create:
-	docker create --name ${HAPROXY} -h ${HAPROXY} -p 5222:5222 -p 9000:9000 -t \
+	docker create --name ${HAPROXY} -h ${HAPROXY} \
+		-p 5222:5222 -p 9000:9000 -t \
+		--label=${PROJECT} \
 		--dns=${DNS_IP} --dns-search=. \
+		-v ${HAPROXY_CONFIG}:/usr/local/etc/haproxy/haproxy.cfg \
 		${HAPROXY}
 	docker start ${HAPROXY}
+
+haproxy.destroy:
+	-docker stop ${HAPROXY}
+	-docker rm ${HAPROXY}
 
 graphite.build:
 	docker build -f Dockerfile.graphite -t ${GRAPHITE} .
@@ -112,6 +127,7 @@ graphite.create:
 		-p 8125:8125/udp \
 		-p 8126:8126 \
 		-v ${GRAPHITE_DATA}:/opt/graphite/storage \
+		--label=${PROJECT} \
 		--dns=${DNS_IP} --dns-search=. \
 		${GRAPHITE}
 	docker start ${GRAPHITE}
@@ -119,9 +135,14 @@ graphite.create:
 graphite.start:
 	docker start ${GRAPHITE}
 
+graphite.destroy:
+	-docker stop ${GRAPHITE}
+	-docker rm ${GRAPHITE}
+
 grafana.create:
 	docker create \
 		--name ${GRAFANA} -h ${GRAFANA} \
+		--label=${PROJECT} \
 		--dns=${DNS_IP} --dns-search=. \
 		-p 3000:3000 \
 		-v ${GRAFANA_DATA}:/var/lib/grafana \
@@ -130,3 +151,7 @@ grafana.create:
 
 grafana.start:
 	docker start ${GRAFANA}
+
+grafana.destroy:
+	-docker stop ${GRAFANA}
+	-docker rm ${GRAFANA}

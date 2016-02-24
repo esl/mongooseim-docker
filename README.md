@@ -208,6 +208,42 @@ For example, like this in case of the PostgreSQL container mentioned above:
 {odbc_server, {pgsql, "myproject-postgres", "postgres", "postgres", "%YOUR_PASSWORD%"}}.
 ```
 
+## Very quick start guide
+
+The repository contains a script that uses all the building blocks and
+builds a MongooseIM cluster with basic monitoring and load-balancing from
+scratch.
+
+To build a 3 node cluster from the current master branch follow these
+steps:
+
+Build all necessary Docker images and MongooseIM release:
+```
+PROJECT=example COMMIT=master ./quickstart build
+```
+
+Start all the containers and set them up:
+```
+PROJECT=example NODES=3 ./quickstart start
+```
+If you see something like:
+```
+You should be able to connect to MongooseIM via XMPP at $DOCKERIP:5222.
+...
+```
+at the end of the output then you should be able to explore MongooseIM on
+all the dashboards listed there. Please note that Graphite metrics need
+some time to show up for the first time.
+
+To list all the containers created for the project:
+```
+PROJECT=example ./quickstart status
+```
+
+To stop and remove all of them:
+```
+PROJECT=example ./quickstart stop
+```
 
 ## ToDo
 
