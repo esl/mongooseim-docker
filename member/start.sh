@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 #set -x
+tar xfz mongooseim.tar.gz -C /member || (echo "can't untar release" && exit 1)
+ls /member
 cd /member
-tar xfz mongooseim.tar.gz || (echo "can't untar release" && exit 1)
 [ -f /member/hosts ] && cat /member/hosts >> /etc/hosts
 cd -
 

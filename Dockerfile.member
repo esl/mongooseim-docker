@@ -1,5 +1,5 @@
 FROM phusion/baseimage
-MAINTAINER Radek Szymczyszyn <radoslaw.szymczyszyn@erlang-solutions.com>
+MAINTAINER Michał Piotrowski <michal.piotrowski@erlang-solutions.com>
 
 # required packages
 RUN apt-get update && apt-get install -y \
@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
 
 COPY ./member/clusterize /clusterize
 COPY ./member/start.sh /start.sh
+COPY ./member/mongooseim.tar.gz mongooseim.tar.gz
 VOLUME /member
 
 EXPOSE 4369 5222 5269 5280 9100
