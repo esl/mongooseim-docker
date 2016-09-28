@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 #set -x
-MIM_WORK_DIR="/mongooseim"
-mkdir ${MIM_WORK_DIR}
+MIM_WORK_DIR="/usr/lib"
 tar xfz mongooseim.tar.gz -C ${MIM_WORK_DIR} || (echo "can't untar release" && exit 1)
 ls /member
 cd /member
@@ -14,10 +13,11 @@ NODETYPE=sname:${NODE}
 CLUSTER_NODE=mongooseim@${HOSTNAME%-?}-1
 CLUSTER_COOKIE=ejabberd
 ROOT_DIR=${MIM_WORK_DIR}/mongooseim
-MNESIA_DIR=${ROOT_DIR}/Mnesia.${NODE}
+MNESIA_DIR=/var/lib/mongooseim/Mnesia.${NODE}
+LOGS_DIR=/var/log/mongooseim
 EPMD=`find ${ROOT_DIR} -name epmd`
 ESCRIPT=`find ${ROOT_DIR} -name escript`
-
+ETC_DIR=${ROOT_DIR}/etc
 echo "hosts:"
 cat /etc/hosts
 
@@ -25,15 +25,23 @@ cat /etc/hosts
 FILES=( "/member/ejabberd.cfg" "/member/app.config" "/member/vm.args" )
 for file in "${FILES[@]}"
 do
-    [ -f "${file}" ] && cp "${file}" ${MIM_WORK_DIR}/mongooseim/etc/
+    [ -f "${file}" ] && cp "${file}" ${ETC_DIR}/
 done
 
 # make sure proper node name is used
 echo "vm.args:"
-sed -i -e "s/-sname.*$/-sname ${NODE}/" ${MIM_WORK_DIR}/mongooseim/etc/vm.args
-cat ${MIM_WORK_DIR}/mongooseim/etc/vm.args
+sed -i -e "s/-sname.*$/-sname ${NODE}/" ${ETC_DIR}/vm.args
+cat ${ETC_DIR}/vm.args
+
+echo "app.config"
+sed -i -e "s,%{mnesia.*,{mnesia\, [{dir\, \"${MNESIA_DRI}\"}]}\,," ${ETC_DIR}/app.config
+sed -i -e "s,{log_root.*,{log_root\, \"/var/log/mongooseim\"}\,," ${ETC_DIR}/app.config
+cat ${ETC_DIR}/app.config
 
 #file "${MNESIA_DIR}/schema.DAT"
+
+mkdir -p /var/lib/mongooseim
+mkdir -p ${LOGS_DIR}
 
 CLUSTERING_RESULT=0
 # clusterize? if the numeric nodename suffix is 1 we are the master
