@@ -13,7 +13,7 @@ NODETYPE=sname:${NODE}
 CLUSTER_NODE=mongooseim@${HOSTNAME%-?}-1
 CLUSTER_COOKIE=ejabberd
 ROOT_DIR=${MIM_WORK_DIR}/mongooseim
-MNESIA_DIR=${ROOT_DIR}/Mnesia.${NODE}
+MNESIA_DIR=/var/lib/mongooseim/Mnesia.${NODE}
 EPMD=`find ${ROOT_DIR} -name epmd`
 ESCRIPT=`find ${ROOT_DIR} -name escript`
 
@@ -33,6 +33,8 @@ sed -i -e "s/-sname.*$/-sname ${NODE}/" ${MIM_WORK_DIR}/mongooseim/etc/vm.args
 cat ${MIM_WORK_DIR}/mongooseim/etc/vm.args
 
 #file "${MNESIA_DIR}/schema.DAT"
+
+mkdir -p /var/lib/mongooseim
 
 CLUSTERING_RESULT=0
 # clusterize? if the numeric nodename suffix is 1 we are the master
