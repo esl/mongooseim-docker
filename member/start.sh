@@ -44,17 +44,22 @@ mkdir -p /var/lib/mongooseim
 mkdir -p ${LOGS_DIR}
 
 CLUSTERING_RESULT=0
-# clusterize? if the numeric nodename suffix is 1 we are the master
-if [ x"${HOSTNAME##*-}" = x"1" ]; then
-    echo "MongooseIM cluster primary node ${NODE}"
-elif [ ! -f "${MNESIA_DIR}/schema.DAT" ]; then
-    echo "MongooseIM node ${NODE} joining ${CLUSTER_NODE}"
-    # epmd must be running for escript to use distribution
-    ${EPMD} -daemon
-    ${ESCRIPT} /clusterize ${NODETYPE} ${CLUSTER_COOKIE} ${CLUSTER_NODE} ${MNESIA_DIR}
-    CLUSTERING_RESULT=$?
+# force cluster master role
+if [ -z "$CLUSTER_MASTER" ]; then
+    # clusterize? if the numeric nodename suffix is 1 we are the master
+    if [ x"${HOSTNAME##*-}" = x"1" ]; then
+        echo "MongooseIM cluster primary node ${NODE}"
+    elif [ ! -f "${MNESIA_DIR}/schema.DAT" ]; then
+        echo "MongooseIM node ${NODE} joining ${CLUSTER_NODE}"
+        # epmd must be running for escript to use distribution
+        ${EPMD} -daemon
+        ${ESCRIPT} /clusterize ${NODETYPE} ${CLUSTER_COOKIE} ${CLUSTER_NODE} ${MNESIA_DIR}
+        CLUSTERING_RESULT=$?
+    else
+        echo "MongooseIM node ${NODE} already clustered"
+    fi
 else
-    echo "MongooseIM node ${NODE} already clustered"
+    echo "MongooseIM cluster forced primary node ${NODE}"
 fi
 
 if [ ${CLUSTERING_RESULT} == 0 ]; then
