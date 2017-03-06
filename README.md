@@ -1,7 +1,5 @@
 # mongooseim-docker
 
-MongooseIM server version 1.5.  
-
 MongooseIM is Erlang Solutions' robust and efficient XMPP server aimed at large installations.
 Specifically designed for enterprise purposes,
 it is fault-tolerant, can utilize resources of multiple clustered machines and easily scale in need of more capacity (by just adding a box/VM).
@@ -12,68 +10,47 @@ was bootstrapped from Paweł Pikuła's (@ppikula) great https://github.com/ppiku
 
 ## Quick start guide
 
+If you need vanila MongooseIM as found on https://github.com/esl/MongooseIM please use docker images from
+https://hub.docker.com/r/mongooseim/mongooseim/
+
+If customised images are needed, following documentation may be useful.
 
 ### Build a MongooseIM tarball
 
-Building the build bot:
+#### The builder bot
+
+In order to build MongooseIM tarball a mongooseim-builder needs to be started.
+It's important to mount the container `/builds` volume as the MongooseIM tarball
+will be placed there after the build.
 
 ```
-make PROJECT=myproject builder
+docker run -d --name mongooseim-builder -h mongooseim-builder -v ${VOLUMES}/builds:/builds mongooseim/mongooseim-builder
 ```
 
-The builder is started with an external volume `${VOLUMES}/builds` mounted as `/builds`.
-By default `VOLUMES` is defined as `$(shell pwd)/examples`,
-but you can override it in the Makefile or on the command line (as is done with `PROJECT`).
+#### Running the build
 
-The `PROJECT` variable isn't really used in any other way than identifying your container.
-That way if you want to customize the builder Dockerfile for different projects,
-you can still use a single Makefile to build multiple different builders.
-The container will be named `${PROJECT}-builder`.
-
-The builder expects to find a `/builds/specs` file with the following format:
-
+Now building MongooseIM tarball is as simple as runing following command:
 ```
-myproject  3414588 https://git.repo.address.com
-myproject2 3414588 https://git.repo.address.com custom_build_script.sh
+docker exec -i mongooseim-builder /build.sh
 ```
 
-The columns are:
-
--   project name / unique name - used to identify the line
-
--   commit / branch / tag - what to checkout?
-
--   repo address - where to checkout from? this can be a local address, so
-    you can place the repo next to the `specs` file itself for fast builds
-    from the local file system
-
--   optional custom build script - if the default build procedure doesn't
-    work with the repo you provide
-    (see `builder/build.sh` if you want to inspect it);
-    if you provide a custom script, it will be called like this:
-
-    ```
-    custom_build_script.sh myproject2 3414588 https://git.repo.address.com custom_build_script.sh
-    ```
-
-To use a valid MongooseIM repo and commit we'll use this `specs` file:
+This command will by default build MongooseIM's master branch from: https://github.com/esl/MongooseIM.
+This can be changed by specificing parameter to the `build.sh` command:
 
 ```
-myproject 34097d5 https://github.com/esl/mongooseim
+/build.sh project_name repo commit
 ```
 
-To build a MongooseIM tarball run:
+* `project_name` - friendly name for the build
+
+* `commit` - commit or branch or tag - what to checkout?
+
+* `repo` - where to checkout from
+
+In order to build a specific commit, following command can be used:
 
 ```
-docker exec -it myproject-builder /build.sh
-```
-
-For troubleshooting you might also use:
-
-```
-make PROJECT=myproject builder.shell
-# inside the container
-/build.sh
+docker exec -i mongooseim-builder /build.sh MongooseIM https://github.com/esl/MongooseIM a37c196
 ```
 
 A log file of the build is available at `/builds/build.log`,
@@ -86,11 +63,19 @@ at `${VOLUMES}/builds/mongooseim-myproject-3414588-2015-11-20_095715.tar.gz`
 
 ### Creating MongooseIM containers
 
-First, we need to setup some volumes (don't mind `builds/` for this stage):
+#### Building the image
+
+Provided a tarball was produced by mongooseim-builder a small image with only
+MongooseIM can be build now from `Dockerfile.member`. In order to build the image
+the MongooseIM tarball has to be copied to `members` directory.
+The image can now be build with this command:
+
+`docker build -f Dockerfile.member -t mongooseim .`
+
+First, we need to setup some volumes:
 
 ```
 ${VOLUMES}/
-├── builds
 ├── myproject-mongooseim-1
 │   ├── ejabberd.cfg
 │   ├── hosts
@@ -107,7 +92,7 @@ We're preparing a 2 node cluster hence two directories (`myproject-mongooseim-X`
 The only file we need to place there is `ejabberd.cfg` (a predefined config file).
 The rest is actually created when we build our cluster member containers.
 
-We create a cluster member image with 
+We create a cluster member image with
 
 ```
 make PROJECT=myproject member.build
