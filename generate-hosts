@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-PROJECT=$1
-
-[ x"" = x"$PROJECT" ] && echo "PROJECT not specified" && exit 1
-
-docker ps --format "{{.ID}} {{.Names}}" | awk '$2'" ~ /${PROJECT}-/ "'{print $1}' > /tmp/member_ids
-./docker-to-hosts-line < /tmp/member_ids
