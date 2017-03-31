@@ -1,5 +1,4 @@
 FROM phusion/baseimage
-MAINTAINER Radek Szymczyszyn <radoslaw.szymczyszyn@erlang-solutions.com>
 
 # required packages
 RUN apt-get update && apt-get install -y \
@@ -9,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     git \
     make \
     gcc \
+    g++ \
     vim \
     bash-completion \
     libc6-dev \
@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y \
     wget http://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb && \
     dpkg -i erlang-solutions_1.0_all.deb && \
     apt-get update && \
-    apt-get install -y esl-erlang=1:17.5.3 && \
+    apt-get install -y esl-erlang=1:18.3.4 && \
     apt-get clean
 
 COPY ./builder/build.sh /build.sh

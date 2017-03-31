@@ -1,7 +1,0 @@
-{
-    "name":"graphite",
-    "type":"graphite",
-    "url":"http://{{project}}-graphite",
-    "access":"proxy",
-    "basicAuth":false
-}
