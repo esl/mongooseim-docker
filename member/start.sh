@@ -43,25 +43,27 @@ cat ${ETC_DIR}/app.config
 mkdir -p /var/lib/mongooseim
 mkdir -p ${LOGS_DIR}
 
+PATH="${MIM_WORK_DIR}/mongooseim/bin:${PATH}"
 CLUSTERING_RESULT=0
 # clusterize? if the numeric nodename suffix is 1 we are the master
 if [ x"${HOSTNAME##*-}" = x"1" ]; then
     echo "MongooseIM cluster primary node ${NODE}"
 elif [ ! -f "${MNESIA_DIR}/schema.DAT" ]; then
     echo "MongooseIM node ${NODE} joining ${CLUSTER_NODE}"
-    # epmd must be running for escript to use distribution
-    ${EPMD} -daemon
-    ${ESCRIPT} /clusterize ${NODETYPE} ${CLUSTER_COOKIE} ${CLUSTER_NODE} ${MNESIA_DIR}
+    mongooseimctl start
+    mongooseimctl started
+    mongooseimctl status
+    mongooseimctl join_cluster -f ${CLUSTER_NODE}
     CLUSTERING_RESULT=$?
+    mongooseimctl stop
 else
     echo "MongooseIM node ${NODE} already clustered"
 fi
 
 if [ ${CLUSTERING_RESULT} == 0 ]; then
     echo "Clustered ${NODE} with ${CLUSTER_NODE}"
-    PATH="${MIM_WORK_DIR}/mongooseim/bin:${PATH}"
     if [ "$#" -ne 1 ]; then
-        mongooseim live --noshell -noinput +Bd  -mnesia dir \"${MNESIA_DIR}\"
+        mongooseim live --noshell -noinput +Bd
     else
         mongooseimctl $1
     fi

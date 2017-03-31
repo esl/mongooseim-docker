@@ -1,6 +1,5 @@
 FROM phusion/baseimage
 
-COPY ./member/clusterize /clusterize
 COPY ./member/start.sh /start.sh
 COPY ./member/mongooseim.tar.gz mongooseim.tar.gz
 VOLUME ["/member", "/var/lib/mongooseim"]
