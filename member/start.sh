@@ -18,11 +18,9 @@ LOGS_DIR=/var/log/mongooseim
 EPMD=`find ${ROOT_DIR} -name epmd`
 ESCRIPT=`find ${ROOT_DIR} -name escript`
 ETC_DIR=${ROOT_DIR}/etc
-echo "hosts:"
-cat /etc/hosts
 
 # if there are predefined config files available, use them
-FILES=( "/member/ejabberd.cfg" "/member/app.config" "/member/vm.args" )
+FILES=( "/member/ejabberd.cfg" "/member/app.config" "/member/vm.args" "/member/vm.dist.args" )
 for file in "${FILES[@]}"
 do
     [ -f "${file}" ] && cp "${file}" ${ETC_DIR}/
@@ -37,6 +35,9 @@ echo "app.config"
 sed -i -e "s,%{mnesia.*,{mnesia\, [{dir\, \"${MNESIA_DIR}\"}]}\,," ${ETC_DIR}/app.config
 sed -i -e "s,{log_root.*,{log_root\, \"/var/log/mongooseim\"}\,," ${ETC_DIR}/app.config
 cat ${ETC_DIR}/app.config
+
+echo "vm.dist.args"
+cat ${ETC_DIR}/vm.dist.args
 
 #file "${MNESIA_DIR}/schema.DAT"
 
