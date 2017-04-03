@@ -18,11 +18,9 @@ LOGS_DIR=/var/log/mongooseim
 EPMD=`find ${ROOT_DIR} -name epmd`
 ESCRIPT=`find ${ROOT_DIR} -name escript`
 ETC_DIR=${ROOT_DIR}/etc
-echo "hosts:"
-cat /etc/hosts
 
 # if there are predefined config files available, use them
-FILES=( "/member/ejabberd.cfg" "/member/app.config" "/member/vm.args" )
+FILES=( "/member/ejabberd.cfg" "/member/app.config" "/member/vm.args" "/member/vm.dist.args" )
 for file in "${FILES[@]}"
 do
     [ -f "${file}" ] && cp "${file}" ${ETC_DIR}/
@@ -38,30 +36,35 @@ sed -i -e "s,%{mnesia.*,{mnesia\, [{dir\, \"${MNESIA_DIR}\"}]}\,," ${ETC_DIR}/ap
 sed -i -e "s,{log_root.*,{log_root\, \"/var/log/mongooseim\"}\,," ${ETC_DIR}/app.config
 cat ${ETC_DIR}/app.config
 
+echo "vm.dist.args"
+cat ${ETC_DIR}/vm.dist.args
+
 #file "${MNESIA_DIR}/schema.DAT"
 
 mkdir -p /var/lib/mongooseim
 mkdir -p ${LOGS_DIR}
 
+PATH="${MIM_WORK_DIR}/mongooseim/bin:${PATH}"
 CLUSTERING_RESULT=0
 # clusterize? if the numeric nodename suffix is 1 we are the master
 if [ x"${HOSTNAME##*-}" = x"1" ]; then
     echo "MongooseIM cluster primary node ${NODE}"
 elif [ ! -f "${MNESIA_DIR}/schema.DAT" ]; then
     echo "MongooseIM node ${NODE} joining ${CLUSTER_NODE}"
-    # epmd must be running for escript to use distribution
-    ${EPMD} -daemon
-    ${ESCRIPT} /clusterize ${NODETYPE} ${CLUSTER_COOKIE} ${CLUSTER_NODE} ${MNESIA_DIR}
+    mongooseimctl start
+    mongooseimctl started
+    mongooseimctl status
+    mongooseimctl join_cluster -f ${CLUSTER_NODE}
     CLUSTERING_RESULT=$?
+    mongooseimctl stop
 else
     echo "MongooseIM node ${NODE} already clustered"
 fi
 
 if [ ${CLUSTERING_RESULT} == 0 ]; then
     echo "Clustered ${NODE} with ${CLUSTER_NODE}"
-    PATH="${MIM_WORK_DIR}/mongooseim/bin:${PATH}"
     if [ "$#" -ne 1 ]; then
-        mongooseim live --noshell -noinput +Bd  -mnesia dir \"${MNESIA_DIR}\"
+        mongooseim live --noshell -noinput +Bd
     else
         mongooseimctl $1
     fi
