@@ -19,4 +19,6 @@ LABEL org.label-schema.name='MongooseIM' \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.version=$VERSION
 
+RUN apt-get update && apt-get install -y iproute2 && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 ENTRYPOINT ["/start.sh"]
