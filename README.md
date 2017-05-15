@@ -104,7 +104,7 @@ The member container can be created with the following command
 docker run -t -d -h mongooseim-1 --name mongooseim-1  mongooseim
 ```
 
-After `docker logs docker logs mongooseim-1` shows something similar to:
+After `docker logs mongooseim-1` shows something similar to:
 
 ```
 MongooseIM cluster primary node mongooseim@myproject-mongooseim-1
