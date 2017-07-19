@@ -30,9 +30,6 @@ docker run -d --name mongooseim-builder -h mongooseim-builder \
        -v ${VOLUMES}/builds:/builds mongooseim/mongooseim-builder
 ```
 
-or just
-
-
 #### Building MongooseIM
 
 Now building MongooseIM tarball is as simple as runing following command:
@@ -47,11 +44,11 @@ This can be changed by specificing parameter to the `build.sh` command:
 /build.sh project_name repo commit
 ```
 
-* `project_name` - friendly name for the build
+* `project_name` - friendly name for the build (defaults to "mongooseim")
 
-* `commit` - commit or branch or tag - what to checkout?
+* `commit` - commit or branch or tag - what to checkout? (defaults to "master")
 
-* `repo` - where to checkout from
+* `repo` - where to checkout from (defaults to "https://github.com/esl/MongooseIM")
 
 In order to build a specific commit, following command can be used:
 
@@ -66,95 +63,98 @@ Finally, a tarball you get after a successful build will land
 at `${VOLUMES}/builds/mongooseim-myproject-3414588-2015-11-20_095715.tar.gz`
 (it's `mongooseim-${PROJECT}-${COMMIT}-${TIMESTAMP}.tar.gz`).
 
-
 ### Creating MongooseIM containers
 
 #### Building the image
 
 Provided a tarball was produced by mongooseim-builder a small image with only
-MongooseIM can be build now from `Dockerfile.member`. In order to build the image
-the MongooseIM tarball has to be copied to `members` directory.
+MongooseIM can be build now from `Dockerfile.member`. 
+
+IMPORTANT: dockerfile will look for your mongooseim tarball in `./member/mongooseim.tar.gz`. To use your build
+create a symlink, like:
+
+```
+cd member
+ln -s ../builds/builds/mongooseim-myproject-3414588-2015-11-20_095715.tar.gz mongooseim.tar.gz
+```
+
 The image can now be build with this command:
 
-`docker build -f Dockerfile.member -t mongooseim .`
+`docker build -f Dockerfile.member -t mongooseim-myversion .`
 
-First, we need to setup some volumes:
+This will create a `mongooseim-myversion` image from which you can now create containers running this version of MongooseIM.
 
-```
-${VOLUMES}/
-├── myproject-mongooseim-1
-│   ├── ejabberd.cfg
-│   ├── hosts
-│   ├── mongooseim
-│   └── mongooseim.tar.gz
-└── myproject-mongooseim-2
-    ├── ejabberd.cfg
-    ├── hosts
-    ├── mongooseim
-    └── mongooseim.tar.gz
-```
+#### Creating a container
 
-We're preparing a 2 node cluster hence two directories (`myproject-mongooseim-X`).
-The only file we need to place there is `ejabberd.cfg` (a predefined config file).
-The rest is actually created when we build our cluster member containers.
+First, create a subdirectory which will hold configuration files for your cluster. Put there your custom
+`ejabberd.cfg`, `app.config`, `vm.args` and `vm.dist.args` (if you omit some files then the container will use defaults
+from the source code).
 
-The member container can be created with the following command
+You need only one set of files per cluster; the only thing that changes per node is nodename, and this is handled
+automatically by the container's startups script.
+
+Then, assuming your custom config is in `./config`, run:
 
 ```
-docker run -t -d -h mongooseim-1 --name mongooseim-1  mongooseim
+docker run -t -d -v "$(pwd)/config/":/member -h mongo-1 --name mongo-1 mongooseim-myversion
 ```
 
-After `docker logs mongooseim-1` shows something similar to:
+This command creates and runs a `mongo-1` container, based on `mongooseim-myversion` image, and mounts configuration
+directory. MongooseIM node name will be `mongooseim@mongo-1`.
+
+#### Managing a container
+
+Start and stop a container using standard docker commands.
+
+You can run mongoose control scripts within a container; for convenience, use the ./mongooseimctl script. The first arg 
+is required and is a container name (which is also a node domain name). So:
 
 ```
-MongooseIM cluster primary node mongooseim@myproject-mongooseim-1
-Clustered mongooseim@myproject-mongooseim-1 with mongooseim@myproject-mongooseim-1
-Exec: /member/mongooseim/erts-6.3/bin/erlexec -boot /member/mongooseim/releases//mongooseim -embedded -config /member/mongooseim/etc/app.config -args_file /member/mongooseim/etc/vm.args -- live --noshell -noinput +Bd -mnesia dir "/member/mongooseim/Mnesia.mongooseim@myproject-mongooseim-1"
-Root: /member/mongooseim
-2015-11-20 10:42:35.903 [info] <0.7.0> Application lager started on node 'mongooseim@myproject-mongooseim-1'
-...
-2015-11-20 10:42:36.420 [info] <0.145.0>@ejabberd_app:do_notify_fips_mode:270 Used Erlang/OTP does not support FIPS mode
-2015-11-20 10:42:36.453 [info] <0.7.0> Application mnesia exited with reason: stopped
-2015-11-20 10:42:36.535 [info] <0.7.0> Application mnesia started on node 'mongooseim@myproject-mongooseim-1'
-2015-11-20 10:42:36.571 [info] <0.7.0> Application p1_cache_tab started on node 'mongooseim@myproject-mongooseim-1'
+u@localhost$ ./mongooseimctl mongo-1 mnesia running_db_nodes
+['mongoose@mongo-1']
+u@localhost$
 ```
 
-We can health-check the MongooseIM node with `telnet`.
-Supply the IP based on your setup - Docker Machine or localhost - and port
-which translates to the container's 5222:
+To check if MongooseIM is accepting connections use the `./tnet` script. It automatically detects the container's IP and port
+and tries to telnet to it. If you type anything at the shell prompt you should receive an xmpp stream error stanza:
 
 ```
-$ telnet $BOOT2DOCKER_IP 32822
-Trying 192.168.99.100...
-Connected to 192.168.99.100.
+u@localhost$ ./tnet mongo-1
+Mongoose node: mongo-1, 172.17.0.5:5222
+Trying 172.17.0.5...
+Connected to 172.17.0.5.
 Escape character is '^]'.
-<?xml version='1.0'?><stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' id='1996592071' from='localhost' version='1.0'><stream:error><xml-not-well-formed xmlns='urn:ietf:params:xml:ns:xmpp-streams'/></stream:error></stream:stream>Connection closed by foreign host.
+z
+<?xml version='1.0'?><stream:stream xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' id='CB94EBB01F892081' from='localhost' version='1.0'><stream:error><xml-not-well-formed xmlns='urn:ietf:params:xml:ns:xmpp-streams'/></stream:error></stream:stream>Connection closed by foreign host.
+u@localhost$
 ```
 
-Success! MongooseIM is accepting XMPP connections.
+### Clustering
 
+A necessary prerequisite is to enable name resolution, so that your containers can resolve one another's names to IPs
+of containers, or of hosts they are running and exposing their ports on. There is a few ways to approach it, the most
+straightforward is set up a common hosts file for a cluster. 
 
-### Setting up a cluster
-
-Let's start another cluster member:
-
-```
-docker run -t -d -h mongooseim-2 --name mongooseim-2  mongooseim
-```
-
-Redo the `docker logs` and `telnet` checks, but this time against `mongooseim-2`.
-The nodes should already form a cluster.
-Let's check it:
+If your containers are running on the same host and share config directory, then create a `./config/hosts` file like:
 
 ```
-$ docker exec -it myproject-mongooseim-1 /member/mongooseim/bin/mongooseimctl mnesia running_db_nodes
-['mongooseim@myproject-mongooseim-2','mongooseim@myproject-mongooseim-1']
-$ docker exec -it myproject-mongooseim-2 /member/mongooseim/bin/mongooseimctl mnesia running_db_nodes
-['mongooseim@myproject-mongooseim-1','mongooseim@myproject-mongooseim-2']
+172.17.0.5 mongo-1
+172.17.0.6 mongo-2
 ```
 
-Tadaa! There you have a brand new shiny cluster running.
+and restart the containers. Then you can proceed with clustering as you normally would:
 
+```
+./mongooseimctl mongo-2 join_cluster mongooseim@mongo-1
+```
+
+Check if it works:
+
+```
+u@localhost$ ./mongooseimctl mongo-1 mnesia running_db_nodes
+['mongooseim@mongo-2','mongooseim@mongo-1']
+u@localhost$
+'''
 
 ### Adding backends
 

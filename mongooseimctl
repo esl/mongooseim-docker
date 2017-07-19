@@ -1,0 +1,5 @@
+#!/bin/bash
+
+node=$1
+
+docker exec -it $node /usr/lib/mongooseim/bin/mongooseimctl $2 $3 $4 $5 
