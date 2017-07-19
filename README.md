@@ -8,6 +8,33 @@ Its home at GitHub is http://github.com/esl/MongooseIM.
 This work, though it's not reflected in git history,
 was bootstrapped from Paweł Pikuła's (@ppikula) great https://github.com/ppikula/MongooseIM-docker/.
 
+## General
+
+```
+Image:mongooseim/mongooseim-builder
+ |
+ |-Container:mongooseim-builder
+   |
+   |-Build:mongooseim-myproj-master.tar.gz
+   |  |
+   |  |-Image:myproj-master
+   |    |
+   |    |-Container:master-1 -----|
+   |    |                         |- config-dir-1/
+   |    |-Container:master-2 -----|
+   |  
+   |-Build:mongooseim-myproj-branch.tar.gz
+     |
+     |-Image:myproj-branch
+       |
+       |-Container:branch-1 ------|
+       |                          |
+       |-Container:branch-2 ------|- config-dir-2/
+       |                          |
+       |-Container:branch-3 ------|
+
+```
+
 ## Quick start guide
 
 If you need vanila MongooseIM as found on https://github.com/esl/MongooseIM please use docker images from
@@ -154,7 +181,7 @@ Check if it works:
 u@localhost$ ./mongooseimctl mongo-1 mnesia running_db_nodes
 ['mongooseim@mongo-2','mongooseim@mongo-1']
 u@localhost$
-'''
+```
 
 ### Adding backends
 
