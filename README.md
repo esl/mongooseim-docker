@@ -120,6 +120,9 @@ from the source code).
 You need only one set of files per cluster; the only thing that changes per node is nodename, and this is handled
 automatically by the container's startups script.
 
+Your configuration directory will be mounted inside a container as `/member`; if you need ssl keys, put them in a subdirectory
+in your custom config file, and then refer to them in vm.args as `/member/[filename]`.
+
 Then, assuming your custom config is in `./config`, run:
 
 ```
@@ -159,17 +162,29 @@ u@localhost$
 ### Clustering
 
 A necessary prerequisite is to enable name resolution, so that your containers can resolve one another's names to IPs
-of containers, or of hosts they are running and exposing their ports on. There is a few ways to approach it, the most
-straightforward is set up a common hosts file for a cluster. 
+of containers, or of hosts they are running and exposing their ports on. 
 
-If your containers are running on the same host and share config directory, then create a `./config/hosts` file like:
+If your containers are running on the same host and share config directory, then create a user network and add
+your containers to it:
 
 ```
-172.17.0.5 mongo-1
-172.17.0.6 mongo-2
+docker network create myclusternetwork
+docker network connect myclusternetwork mongo-1
+docker network connect myclusternetwork mongo-2
 ```
 
-and restart the containers. Then you can proceed with clustering as you normally would:
+(or create the network beforehand and pass `--network` option to `docker run`).
+
+Another option is to create custom hosts file in your config directory and restart the containers. 
+The container's startup script will append those entries to its /etc/hosts file.
+
+Then check if it works:
+
+```
+docker exec -it mongo-1 ping mongo-2
+```
+
+Once name resolution works, you can proceed with clustering as you normally would:
 
 ```
 ./mongooseimctl mongo-2 join_cluster mongooseim@mongo-1
@@ -204,4 +219,6 @@ For example, like this in case of the PostgreSQL container mentioned above:
 ```
 {odbc_server, {pgsql, "mongooseim-postgres", "mongooseim", "mongooseim", "mongooseim"}}.
 ```
+
+Ah, and you didn't forget to add `mongooseim-postgres` container to your cluster network, did you? Of course you didn't.
 
