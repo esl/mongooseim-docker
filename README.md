@@ -8,6 +8,10 @@ Its home at GitHub is http://github.com/esl/MongooseIM.
 This work, though it's not reflected in git history,
 was bootstrapped from Paweł Pikuła's (@ppikula) great https://github.com/ppikula/MongooseIM-docker/.
 
+## Prerequisites
+
+Linux, preferably Ubuntu 14. On Mac there are some routing issues which are not covered in this document.
+
 ## General
 
 ```
@@ -35,7 +39,7 @@ Image:mongooseim/mongooseim-builder
 
 ```
 
-## Quick start guide
+## Installation
 
 If you need vanila MongooseIM as found on https://github.com/esl/MongooseIM please use docker images from
 https://hub.docker.com/r/mongooseim/mongooseim/
@@ -132,6 +136,9 @@ docker run -t -d -v "$(pwd)/config/":/member -h mongo-1 --name mongo-1 mongoosei
 This command creates and runs a `mongo-1` container, based on `mongooseim-myversion` image, and mounts configuration
 directory. MongooseIM node name will be `mongooseim@mongo-1`.
 
+IMPORTANT: your first node/host name has to end with "-1", and all subsequent names have to follow the same convention. 
+This is because docker scripts try to automatically set up a cluster using this naming scheme.
+
 #### Managing a container
 
 Start and stop a container using standard docker commands.
@@ -198,6 +205,8 @@ u@localhost$ ./mongooseimctl mongo-1 mnesia running_db_nodes
 u@localhost$
 ```
 
+If you created your network first and then started nodes in that network, chances are they cluster themselves automatically.
+
 ### Adding backends
 
 There are plenty of ready to use Docker images with databases
@@ -221,4 +230,44 @@ For example, like this in case of the PostgreSQL container mentioned above:
 ```
 
 Ah, and you didn't forget to add `mongooseim-postgres` container to your cluster network, did you? Of course you didn't.
+
+## Running tests
+
+Testing is a bit more involved, because normally tests are run on the same host as the MongooseIM server, so they expect
+mongoose to listen on certain ports on localhost, use localhost as addressing domain, and set up erlang distribution in the
+most straighforward way possible. To make it run when your servers are inside docker containers requires some tweaks to 
+both environment and test configuration file. There are may ways to do it, here is one of them:
+
+### Tests on host, minimal changes to test config file
+
+1. Publish port(s) from mongooseim
+
+To run the most basic tests you have to access port 5222 of your container. Publish it on host by adding
+```
+-p 5222:5222
+```
+
+to the `docker run` command.
+
+2. Install MongooseIM on host
+
+* install required packages (find a list of them on readthedocs)
+* install and activate Erlang (hint: kerl is a very good tool for that)
+* clone MongooseIM, run `make` (this is enough, you don't need releases)
+
+3. Enable erlang distribution
+
+Tests use distribution to set up nodes they are testing. Here we have to tell tests how to reach the node:
+
+* check your container's IP (`docker inspect mongo-1 | grep IPAddress)`
+* add it to /etc/hosts
+* edit test.config file:
+```
+      {ejabberd_node, 'mongooseim@localhost'}.         => {ejabberd_node, 'mongooseim@mongo-1'}.
+      {hosts, [{mim,  [{node, 'mongooseim@localhost'}, => {hosts, [{mim,  [{node, 'mongooseim@mongo-1'},
+```
+
+Now simple tests (e.g. `mod_ping_SUITE`) should pass. For more elaborate test suits you may have to publish more ports, like
+http endpoints, and configure other mongoose nodes, like mim2 or fed. Remember that other nodes will publish different ports,
+for instance mim2 listens for xmpp connections on 5232, so you will publish it by `-p 5232:5222`.
 
