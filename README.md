@@ -271,3 +271,4 @@ Now simple tests (e.g. `mod_ping_SUITE`) should pass. For more elaborate test su
 http endpoints, and configure other mongoose nodes, like mim2 or fed. Remember that other nodes will publish different ports,
 for instance mim2 listens for xmpp connections on 5232, so you will publish it by `-p 5232:5222`.
 
+One last reminder: if you are going to use ssl keys, the keys in your container have to match those in `tests.disabled/ejabberd_tests/priv/ssl`.
