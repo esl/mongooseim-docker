@@ -130,11 +130,11 @@ in your custom config file, and then refer to them in vm.args as `/member/[filen
 Then, assuming your custom config is in `./config`, run:
 
 ```
-docker run -t -d -v "$(pwd)/config/":/member -h mongo-1 --name mongo-1 mongooseim-myversion
+docker run -t -d -v "$(pwd)/config/":/member -h mongooseim-node-1 --name mongooseim-node-1 mongooseim-myversion
 ```
 
-This command creates and runs a `mongo-1` container, based on `mongooseim-myversion` image, and mounts configuration
-directory. MongooseIM node name will be `mongooseim@mongo-1`.
+This command creates and runs a `mongooseim-node-1` container, based on `mongooseim-myversion` image, and mounts configuration
+directory. MongooseIM node name will be `mongooseim@mongooseim-node-1`.
 
 IMPORTANT: your first node/host name has to end with "-1", and all subsequent names have to follow the same convention. 
 This is because docker scripts try to automatically set up a cluster using this naming scheme.
@@ -147,8 +147,8 @@ You can run mongoose control scripts within a container; for convenience, use th
 is required and is a container name (which is also a node domain name). So:
 
 ```
-u@localhost$ ./mongooseimctl mongo-1 mnesia running_db_nodes
-['mongoose@mongo-1']
+u@localhost$ ./mongooseimctl mongooseim-node-1 mnesia running_db_nodes
+['mongoose@mongooseim-node-1']
 u@localhost$
 ```
 
@@ -156,8 +156,8 @@ To check if MongooseIM is accepting connections use the `./tnet` script. It auto
 and tries to telnet to it. If you type anything at the shell prompt you should receive an xmpp stream error stanza:
 
 ```
-u@localhost$ ./tnet mongo-1
-Mongoose node: mongo-1, 172.17.0.5:5222
+u@localhost$ ./tnet mongooseim-node-1
+Mongoose node: mongooseim-node-1, 172.17.0.5:5222
 Trying 172.17.0.5...
 Connected to 172.17.0.5.
 Escape character is '^]'.
@@ -176,8 +176,8 @@ your containers to it:
 
 ```
 docker network create myclusternetwork
-docker network connect myclusternetwork mongo-1
-docker network connect myclusternetwork mongo-2
+docker network connect myclusternetwork mongooseim-node-1
+docker network connect myclusternetwork mongooseim-node-2
 ```
 
 (or create the network beforehand and pass `--network` option to `docker run`).
@@ -188,20 +188,20 @@ The container's startup script will append those entries to its /etc/hosts file.
 Then check if it works:
 
 ```
-docker exec -it mongo-1 ping mongo-2
+docker exec -it mongooseim-node-1 ping mongooseim-node-2
 ```
 
 Once name resolution works, you can proceed with clustering as you normally would:
 
 ```
-./mongooseimctl mongo-2 join_cluster mongooseim@mongo-1
+./mongooseimctl mongooseim-node-2 join_cluster mongooseim@mongooseim-node-1
 ```
 
 Check if it works:
 
 ```
-u@localhost$ ./mongooseimctl mongo-1 mnesia running_db_nodes
-['mongooseim@mongo-2','mongooseim@mongo-1']
+u@localhost$ ./mongooseimctl mongooseim-node-1 mnesia running_db_nodes
+['mongooseim@mongooseim-node-2','mongooseim@mongooseim-node-1']
 u@localhost$
 ```
 
@@ -259,12 +259,12 @@ to the `docker run` command.
 
 Tests use distribution to set up nodes they are testing. Here we have to tell tests how to reach the node:
 
-* check your container's IP (`docker inspect mongo-1 | grep IPAddress)`
+* check your container's IP (`docker inspect mongooseim-node-1 | grep IPAddress)`
 * add it to /etc/hosts
 * edit test.config file:
 ```
-      {ejabberd_node, 'mongooseim@localhost'}.         => {ejabberd_node, 'mongooseim@mongo-1'}.
-      {hosts, [{mim,  [{node, 'mongooseim@localhost'}, => {hosts, [{mim,  [{node, 'mongooseim@mongo-1'},
+      {ejabberd_node, 'mongooseim@localhost'}.         => {ejabberd_node, 'mongooseim@mongooseim-node-1'}.
+      {hosts, [{mim,  [{node, 'mongooseim@localhost'}, => {hosts, [{mim,  [{node, 'mongooseim@mongooseim-node-1'},
 ```
 
 Now simple tests (e.g. `mod_ping_SUITE`) should pass. For more elaborate test suits you may have to publish more ports, like
