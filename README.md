@@ -249,13 +249,19 @@ To run the most basic tests you have to access port 5222 of your container. Publ
 
 to the `docker run` command.
 
-2. Install MongooseIM on host
+2. Allow request from non-localhost
+
+Since you will be using published ports, the host you are connecting from is not localhost anymore. Default ejabberd.cfg
+in many places accepts requests only from 127.0.0.1 (e.g. registering users or admin REST commands). You have to change it
+to 0.0.0.0 everywhere.
+
+3. Install MongooseIM on host
 
 * install required packages (find a list of them on readthedocs)
 * install and activate Erlang (hint: kerl is a very good tool for that)
 * clone MongooseIM, run `make` (this is enough, you don't need releases)
 
-3. Enable erlang distribution
+4. Enable erlang distribution
 
 Tests use distribution to set up nodes they are testing. Here we have to tell tests how to reach the node:
 
