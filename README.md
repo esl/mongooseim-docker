@@ -178,3 +178,26 @@ For example, like this in case of the PostgreSQL container mentioned above:
 {odbc_server, {pgsql, "mongooseim-postgres", "mongooseim", "mongooseim", "mongooseim"}}.
 ```
 
+### Multistage build
+
+There is another Dockerfile in this repo `Dockerfile.multistage`, which allows
+to build MongooseIM Docker image from current source code, instead of pulling
+it from GitHub, like `builder` does.
+
+It may be used with `multistage_build.sh` script, which is overlay over
+Dockerfile. Usage is simple:
+
+```
+./multistage_build.sh <path_to_moongooseim_root_dir>
+```
+
+It will copy required files into MongooseIM directory and start build process.
+Files to be copied: `member/start.sh` and `Dockerfile.multistage`. They
+will be deleted once build process is finished or canceled.
+
+It is possible to pass custom image tag with environmental variable:
+
+```
+IMAGE_TAG=my_mongooseim_docker_build \
+  ./multistage_build.sh <path_to_moongooseim_root_dir>
+```

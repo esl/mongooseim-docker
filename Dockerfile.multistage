@@ -1,0 +1,59 @@
+FROM phusion/baseimage as builder
+
+# required packages
+RUN apt-get update && apt-get install -y \
+    bash \
+    bash-completion \
+    wget \
+    git \
+    make \
+    gcc \
+    g++ \
+    vim \
+    bash-completion \
+    libc6-dev \
+    libncurses5-dev \
+    libssl-dev \
+    libexpat1-dev \
+    libpam0g-dev \
+    unixodbc-dev \
+    wget
+
+RUN wget http://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb && \
+    dpkg -i erlang-solutions_1.0_all.deb && \
+    apt-get update && \
+    apt-get install -y esl-erlang=1:19.3.6 && \
+    apt-get clean
+
+COPY . /mim_build
+
+RUN cd mim_build && \
+    ./rebar3 clean && \
+    tools/configure with-all && \
+    make rel
+
+FROM phusion/baseimage
+
+RUN apt-get update && apt-get install -y iproute2 netcat inetutils-ping telnet && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+COPY --from=builder /mim_build/_build/prod/rel/mongooseim/ /usr/lib/mongooseim
+COPY ./docker/start.sh /start.sh
+VOLUME ["/member", "/var/lib/mongooseim"]
+
+EXPOSE 4369 5222 5269 5280 9100
+
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION
+LABEL org.label-schema.name='MongooseIM' \
+      org.label-schema.description='MongooseIM is a mobile messaging platform with focus on performance and scalability' \
+      org.label-schema.url='https://www.erlang-solutions.com/products/mongooseim.html' \
+      org.label-schema.vcs-url='https://github.com/esl/MongooseIM' \
+      org.label-schema.vendor='Erlang Solutions' \
+      org.label-schema.schema-version='1.0' \
+      org.label-schema.build-date=$BUILD_DATE \
+      org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.version=$VERSION
+
+ENTRYPOINT ["/start.sh"]
