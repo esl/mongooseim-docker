@@ -38,7 +38,7 @@ RUN apt-get update && apt-get install -y iproute2 netcat inetutils-ping telnet &
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY --from=builder /mim_build/_build/prod/rel/mongooseim/ /usr/lib/mongooseim
-COPY ./docker/start.sh /start.sh
+COPY ./multistage/start.sh /start.sh
 VOLUME ["/member", "/var/lib/mongooseim"]
 
 EXPOSE 4369 5222 5269 5280 9100

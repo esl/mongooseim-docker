@@ -9,7 +9,7 @@ DOCKERHUB_REPO=${DOCKERHUB_REPO:-"mongooseim/mongooseim"}
 
 # Function used for cleanup.
 function remove_copied_files() {
-    rm -rf $MONGOOSEIM_DIR/member $MONGOOSEIM_DIR/$DOCKERFILE
+    rm -rf $MONGOOSEIM_DIR/multistage $MONGOOSEIM_DIR/$DOCKERFILE
 }
 
 # Check if path to MongooseIM directory was given
@@ -50,7 +50,7 @@ trap remove_copied_files INT
 
 # Copy files which are required by Dockerfile, fail if coping is not succesed
 set -e
-cp -ir $MONGOOSEIM_DOCKER_DIR/member $MONGOOSEIM_DIR
+cp -ir $MONGOOSEIM_DOCKER_DIR/multistage $MONGOOSEIM_DIR
 cp -i $DOCKERFILE_PATH $MONGOOSEIM_DIR/$DOCKERFILE
 set +e
 
