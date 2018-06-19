@@ -201,3 +201,12 @@ It is possible to pass custom image tag with environmental variable:
 IMAGE_TAG=my_mongooseim_docker_build \
   ./multistage_build.sh <path_to_moongooseim_root_dir>
 ```
+
+#### Pitfalls
+
+By default `multistage_build.sh` script uses git branch and git reference
+as an image tag, e.g.: `new_feature-c36dce4fd`. Branch names may contain
+characters, which are invalid tags. For instance `/` cannot be present
+in a tag name. In such a case, image's custom tag has to be explicitly set
+using aforementioned `IMAGE_TAG` variable. Please visit [Docker docs](https://docs.docker.com/engine/reference/commandline/tag/#extended-description)
+to read about valid Docker tag names.
