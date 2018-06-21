@@ -17,20 +17,34 @@ If customised images are needed, following documentation may be useful.
 
 ### Build a MongooseIM tarball
 
-#### The builder bot
+#### The builder container
 
-In order to build MongooseIM tarball a mongooseim-builder needs to be started.
-It's important to mount the container `/builds` volume as the MongooseIM tarball
-will be placed there after the build.
-For simplicity it's assumed that env var `VOLUMES` is exported and set to an existing
-absolute path, f.e: `pwd`
+In order to build MongooseIM tarball a builder image and container need to be created.
+You can create an image by running the following command:
+
+```
+docker build -f Dockerfile.builder -t mongooseim-builder .
+```
+
+After that you can run the builder container.
+It's important to mount the container's `/builds` directory as a volume because MongooseIM tarball will be placed there after the build.
+For simplicity it's assumed that env var `VOLUMES` is exported and set to an existing absolute path, f.e: `pwd`
 
 ```
 docker run -d --name mongooseim-builder -h mongooseim-builder \
        -v ${VOLUMES}/builds:/builds mongooseim/mongooseim-builder
 ```
 
-or just
+##### Modifying Erlang/OTP version
+
+You can modify which Erlang/OTP version is used by MongooseIM when creating a builder image by providing `OTP_VSN` build argument:
+
+
+```
+docker build --build-arg OTP_VSN=19.3.6 -f Dockerfile.builder -t mongooseim-builder:otp19.3.6 .
+```
+
+By default the builder will use Erlang/OTP 20.3.
 
 
 #### Building MongooseIM
