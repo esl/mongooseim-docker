@@ -1,7 +1,6 @@
 #!/bin/bash
 
-MONGOOSEIM_DOCKER_DIR="./"
-MONGOOSEIM_DOCKER_DIR=$(realpath ${MONGOOSEIM_DOCKER_DIR})
+MONGOOSEIM_DOCKER_DIR=$(dirname $(realpath ${0}))
 MONGOOSEIM_DIR=$1
 DOCKERFILE="Dockerfile.multistage"
 DOCKERFILE_PATH="${MONGOOSEIM_DOCKER_DIR}/${DOCKERFILE}"
@@ -19,7 +18,7 @@ if [ $# -ne 1 ]; then
 fi
 
 # Check if Dockerfile exists
-if [ ! -e "$DOCKERFILE" ]; then
+if [ ! -e "$DOCKERFILE_PATH" ]; then
     echo "Dockerfile not found at: ${DOCKERFILE}"
     exit 1
 fi
@@ -45,7 +44,7 @@ if [ -z "$IMAGE_TAG" ]; then
     IMAGE_TAG="mongooseim/mongooseim:${GIT_BRANCH}-${GIT_REF}"
 fi
 
-#T rap CTRL+C, to remove files when user interupts build process
+#Trap CTRL+C, to remove files when user interupts build process
 trap remove_copied_files INT
 
 # Copy files which are required by Dockerfile, fail if coping is not succesed
