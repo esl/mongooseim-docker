@@ -150,6 +150,15 @@ Success! MongooseIM is accepting XMPP connections.
 
 ### Setting up a cluster
 
+There are two methods of clustering: the default, automatic one and a method where you have more control over the cluster formation.
+
+#### Default clustering
+
+To use default clustering behaviour, your containers need both container names and host names with the `-n` suffix, where `n` are consecutive integers starting with `1`, e.g. `mongooseim-1`, `mongooseim-2` and so on.
+Make sure you have started a node with `-1` suffix first, as all the other nodes will connect to it when joining the cluster.
+
+##### Example
+
 Let's start another cluster member:
 
 ```
@@ -169,6 +178,35 @@ $ docker exec -it myproject-mongooseim-2 /member/mongooseim/bin/mongooseimctl mn
 
 Tadaa! There you have a brand new shiny cluster running.
 
+#### Manual clustering
+
+With the manual clustering method, you need to explicitly specify the name of the node to join the cluster with via the `CLUSTER_WITH` environment variable.
+You may also disable clustering during container startup altogether by setting `JOIN_CLUSTER=false` variable (it's set to `true` by default).
+
+##### Examples
+
+Let's try providing a name of the node to join the cluster with manually:
+
+```
+docker network create mim
+docker run -dt --net mim -h first-node --name first-node -e JOIN_CLUSTER=false mongooseim
+docker run -dt --net mim -h second-node --name second-node -e CLUSTER_WITH=mongooseim@first-node --name mongooseim-2 mongooseim
+```
+
+Let's break up these commands on by one.
+
+The first command creates a network for nodes so that they reach each other via network by container name.
+The second command starts a node and tells it not to try to join any clusters (as there are no other nodes).
+We then tell the second node to join the cluster with the first node.
+
+You can now check that the nodes have formed the cluster:
+
+```
+$ docker exec -t mongooseim-1 /usr/lib/mongooseim/bin/mongooseimctl mnesia running_db_nodes
+['mongooseim@first-host','mongooseim@second-host']
+$ docker exec -t mongooseim-2 /usr/lib/mongooseim/bin/mongooseimctl mnesia running_db_nodes
+['mongooseim@second-host','mongooseim@first-host']
+```
 
 ### Adding backends
 
