@@ -1,5 +1,10 @@
 # mongooseim-docker
 
+## Miquido notes
+You build and start MIM+db with one script:
+`./start_miquido_mim.sh <path_to_mim_root>`
+It loads ejabberd.cfg from ./config/ejabberd.cfg
+
 MongooseIM is Erlang Solutions' robust and efficient XMPP server aimed at large installations.
 Specifically designed for enterprise purposes,
 it is fault-tolerant, can utilize resources of multiple clustered machines and easily scale in need of more capacity (by just adding a box/VM).
