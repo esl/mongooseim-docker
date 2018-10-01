@@ -12,10 +12,10 @@ set -e
 show_usage(){
     echo "Usage"
     echo "If you want to rebuild the image:"
-    echo "${0} build <path_to_mim_repo>"
+    echo "sudo ${0} build <path_to_mim_repo>"
     echo "or"
     echo "If you want to run docker cotainers from existing image"
-    echo "${0} run <path_to_mim_repo>"
+    echo "sudo ${0} run <path_to_mim_repo>"
 }
 
 if [[ $# != 2 ]] || [[ $1 != "run" && $1 != "build" ]]; then
