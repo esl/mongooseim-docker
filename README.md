@@ -150,10 +150,16 @@ Success! MongooseIM is accepting XMPP connections.
 
 ### Setting up a cluster
 
-Let's start another cluster member:
+Create user-defined bridge network and connect `mongooseim-1` container to it:
+```
+docker network create mim_cluster
+docker network connect mim_cluster mongooseim-1
+```
+
+And now let's start another cluster member:
 
 ```
-docker run -t -d -h mongooseim-2 --name mongooseim-2  mongooseim
+docker run -t -d --network mim_cluster -h mongooseim-2 --name mongooseim-2 mongooseim
 ```
 
 Redo the `docker logs` and `telnet` checks, but this time against `mongooseim-2`.
@@ -169,6 +175,15 @@ $ docker exec -it myproject-mongooseim-2 /member/mongooseim/bin/mongooseimctl mn
 
 Tadaa! There you have a brand new shiny cluster running.
 
+Note that the first container is started with `-h mongooseim-1` and `--name mongooseim-1` parameters, few things are important here:
+1) Both parameters must be set to one and the same value. The second and all the subsequent containers has the same requirement.
+  * `-h` option sets `HOSTNAME` environment variable for the container. [start.sh](https://github.com/esl/mongooseim-docker/blob/66666b9/member/start.sh#L11) script uses it to generate the erlang node name.
+  * `--name` is required to provide automatic DNS resolution between the containers. See [this](https://docs.docker.com/network/bridge/#differences-between-user-defined-bridges-and-the-default-bridge) page for more details
+2) Format of the host name:
+  * Host name of the first container must be in the next format `some_name-1`. That allows [start.sh](https://github.com/esl/mongooseim-docker/blob/66666b9/member/start.sh#L50) to identify the primary node of the cluster
+  * All the subsequent containers must have host name in the next format `some_name-N`, where `N`>1
+3) Clastering is done automatically by [start.sh](https://github.com/esl/mongooseim-docker/blob/66666b9/member/start.sh#L50) script. If you want to modify that logic please check the latest MongooseIM [documentation](https://mongooseim.readthedocs.io/en/latest/operation-and-maintenance/Cluster-configuration-and-node-management/)
+
 
 ### Adding backends
 
@@ -176,7 +191,7 @@ There are plenty of ready to use Docker images with databases
 or external services you might want to integrate with the cluster.
 For example, I'm running a [stock `postgres:9.6.1`](https://hub.docker.com/_/postgres/) container.
 ```
-docker run -d --name mongooseim-postgres \
+docker run -d --name mongooseim-postgres --network mim_cluster \
        -e POSTGRES_PASSWORD=mongooseim -e POSTGRES_USER=mongooseim \
        -v ${PATH_TO_MONGOOSEIM_PGSQL_FILE}:/docker-entrypoint-initdb.d/pgsql.sql:ro \
        -p 5432:5432 postgres:9.6.1
