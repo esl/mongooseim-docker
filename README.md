@@ -10,7 +10,7 @@ was bootstrapped from Paweł Pikuła's (@ppikula) great https://github.com/ppiku
 
 ## Quick start guide
 
-If you need vanila MongooseIM as found on https://github.com/esl/MongooseIM please use docker images from
+If you need vanilla MongooseIM as found on https://github.com/esl/MongooseIM please use docker images from
 https://hub.docker.com/r/mongooseim/mongooseim/
 
 If customised images are needed, following documentation may be useful.
@@ -49,13 +49,14 @@ By default the builder will use Erlang/OTP 20.3.
 
 #### Building MongooseIM
 
-Now building MongooseIM tarball is as simple as runing following command:
+Now building MongooseIM tarball is as simple as running the following command:
+
 ```
 docker exec -i mongooseim-builder /build.sh
 ```
 
 This command will by default build MongooseIM's master branch from: https://github.com/esl/MongooseIM.
-This can be changed by specificing parameter to the `build.sh` command:
+This can be changed by specifying a parameter to the `build.sh` command:
 
 ```
 /build.sh project_name repo commit
@@ -150,7 +151,7 @@ Success! MongooseIM is accepting XMPP connections.
 
 ### Setting up a cluster
 
-Create user-defined bridge network and connect `mongooseim-1` container to it:
+Create a user-defined bridge network and connect `mongooseim-1` container to it:
 ```
 docker network create mim_cluster
 docker network connect mim_cluster mongooseim-1
@@ -175,14 +176,19 @@ $ docker exec -it myproject-mongooseim-2 /member/mongooseim/bin/mongooseimctl mn
 
 Tadaa! There you have a brand new shiny cluster running.
 
-Note that the first container is started with `-h mongooseim-1` and `--name mongooseim-1` parameters, few things are important here:
-1) Both parameters must be set to one and the same value. The second and all the subsequent containers has the same requirement.
-  * `-h` option sets `HOSTNAME` environment variable for the container. [start.sh](https://github.com/esl/mongooseim-docker/blob/66666b9/member/start.sh#L11) script uses it to generate the erlang node name.
-  * `--name` is required to provide automatic DNS resolution between the containers. See [this](https://docs.docker.com/network/bridge/#differences-between-user-defined-bridges-and-the-default-bridge) page for more details
-2) Format of the host name:
-  * Host name of the first container must be in the next format `some_name-1`. That allows [start.sh](https://github.com/esl/mongooseim-docker/blob/66666b9/member/start.sh#L50) to identify the primary node of the cluster
-  * All the subsequent containers must have host name in the next format `some_name-N`, where `N`>1
-3) Clastering is done automatically by [start.sh](https://github.com/esl/mongooseim-docker/blob/66666b9/member/start.sh#L50) script. If you want to modify that logic please check the latest MongooseIM [documentation](https://mongooseim.readthedocs.io/en/latest/operation-and-maintenance/Cluster-configuration-and-node-management/)
+Note that the first container is started with `-h mongooseim-1` and `--name mongooseim-1` parameters - a few things are important here:
+
+1. Both parameters must be set to the same value. The second and all the subsequent containers have the same requirement.
+
+    * `-h` option sets `HOSTNAME` environment variable for the container. The [start.sh](https://github.com/esl/mongooseim-docker/blob/66666b9/member/start.sh#L11) script uses it to generate the Erlang node name.
+    * `--name` is required to provide automatic DNS resolution between the containers. See [Docker network documentation](https://docs.docker.com/network/bridge/#differences-between-user-defined-bridges-and-the-default-bridge) page for more details.
+
+1. Format of the host name:
+
+    * Host name of the first container must be in the `some_name-1` format. That allows [start.sh](https://github.com/esl/mongooseim-docker/blob/66666b9/member/start.sh#L50) to identify the primary node of the cluster.
+    * All the subsequent containers must follow the `some_name-N` host name format, where `N` > 1.
+
+1. Clustering is done automatically by the [start.sh](https://github.com/esl/mongooseim-docker/blob/66666b9/member/start.sh#L50) script. If you want to modify that logic please check [the latest MongooseIM documentation](https://mongooseim.readthedocs.io/en/latest/operation-and-maintenance/Cluster-configuration-and-node-management/).
 
 
 ### Adding backends
@@ -190,6 +196,7 @@ Note that the first container is started with `-h mongooseim-1` and `--name mong
 There are plenty of ready to use Docker images with databases
 or external services you might want to integrate with the cluster.
 For example, I'm running a [stock `postgres:9.6.1`](https://hub.docker.com/_/postgres/) container.
+
 ```
 docker run -d --name mongooseim-postgres --network mim_cluster \
        -e POSTGRES_PASSWORD=mongooseim -e POSTGRES_USER=mongooseim \
