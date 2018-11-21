@@ -10,7 +10,6 @@ cd -
 
 NODE=mongooseim@${HOSTNAME}
 NODETYPE=sname:${NODE}
-CLUSTER_NODE=mongooseim@${HOSTNAME%-?}-1
 CLUSTER_COOKIE=mongooseim
 ROOT_DIR=${MIM_WORK_DIR}/mongooseim
 MNESIA_DIR=/var/lib/mongooseim/Mnesia.${NODE}
@@ -45,30 +44,45 @@ mkdir -p /var/lib/mongooseim
 mkdir -p ${LOGS_DIR}
 
 PATH="${MIM_WORK_DIR}/mongooseim/bin:${PATH}"
-CLUSTERING_RESULT=0
-# clusterize? if the numeric nodename suffix is 1 we are the master
-if [ x"${HOSTNAME##*-}" = x"1" ]; then
-    echo "MongooseIM cluster primary node ${NODE}"
-elif [ ! -f "${MNESIA_DIR}/schema.DAT" ]; then
-    echo "MongooseIM node ${NODE} joining ${CLUSTER_NODE}"
-    mongooseimctl start
-    mongooseimctl started
-    mongooseimctl status
-    mongooseimctl join_cluster -f ${CLUSTER_NODE}
-    CLUSTERING_RESULT=$?
-    mongooseimctl stop
-else
-    echo "MongooseIM node ${NODE} already clustered"
-fi
 
-if [ ${CLUSTERING_RESULT} == 0 ]; then
-    echo "Clustered ${NODE} with ${CLUSTER_NODE}"
+function run() {
     if [ "$#" -ne 1 ]; then
         mongooseim live --noshell -noinput +Bd
     else
         mongooseimctl $1
     fi
+}
+
+DEFAULT_CLUSTERING=0
+if [ "${CLUSTER_WITH}" = "" ]; then
+    CLUSTER_WITH="mongooseim@${HOSTNAME%-?}-1"
+    DEFAULT_CLUSTERING=1
+fi
+
+if [ "${JOIN_CLUSTER}" = "" ] || [ "${JOIN_CLUSTER}" = "true"] || [ "${JOIN_CLUSTER}" = "1" ]; then
+    CLUSTERING_RESULT=0
+    # don't cluster if default clustering is used and out suffix is -1
+    if [ $DEFAULT_CLUSTERING -eq 1 ] && [ x"${HOSTNAME##*-}" = x"1" ]; then
+        echo "MongooseIM cluster primary node ${NODE}"
+    elif [ ! -f "${MNESIA_DIR}/schema.DAT" ]; then
+        echo "MongooseIM node ${NODE} joining ${CLUSTER_WITH}"
+        mongooseimctl start
+        mongooseimctl started
+        mongooseimctl status
+        mongooseimctl join_cluster -f ${CLUSTER_WITH}
+        CLUSTERING_RESULT=$?
+        mongooseimctl stop
+    else
+        echo "MongooseIM node ${NODE} already clustered"
+    fi
+
+    if [ ${CLUSTERING_RESULT} == 0 ]; then
+        echo "Clustered ${NODE} with ${CLUSTER_WITH}"
+        run
+    else
+        echo "Failed clustering ${NODE} with ${CLUSTER_WITH}"
+        exit 2
+    fi
 else
-    echo "Failed clustering ${NODE} with ${CLUSTER_NODE}"
-    exit 2
+    run
 fi

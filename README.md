@@ -151,6 +151,28 @@ Success! MongooseIM is accepting XMPP connections.
 
 ### Setting up a cluster
 
+There are two methods of clustering: the default, automatic one and a method where you have more control over the cluster formation.
+
+#### Default clustering
+
+To use default clustering behaviour, your containers need both container names (`--name` option) and host names (`-h` option) with the `-n` suffix,
+where `n` are consecutive integers starting with `1`, e.g. `mongooseim-1`, `mongooseim-2` and so on.
+Make sure you have started a node with `-1` suffix first (`-h mongooseim-1` and `--name mongooseim-1`), as all the other nodes will connect to it when joining the cluster.
+
+Few things are important here:
+
+1. Both parameters must be set to the same value. The second and all the subsequent containers have the same requirement.
+
+    * `-h` option sets `HOSTNAME` environment variable for the container. The [start.sh](https://github.com/esl/mongooseim-docker/blob/e5a2d22/member/start.sh#L11) script uses it to generate the Erlang node name.
+    * `--name` is required to provide automatic DNS resolution between the containers. See [Docker network documentation](https://docs.docker.com/network/bridge/#differences-between-user-defined-bridges-and-the-default-bridge) page for more details.
+
+1. Format of the host name:
+
+    * Host name of the first container must be in the `some_name-1` format. That allows [start.sh](https://github.com/esl/mongooseim-docker/blob/e5a2d22/member/start.sh#L58) to identify the primary node of the cluster.
+    * All the subsequent containers must follow the `some_name-N` host name format, where `N` > 1.
+
+##### Example
+
 Create a user-defined bridge network and connect `mongooseim-1` container to it:
 ```
 docker network create mim_cluster
@@ -176,19 +198,35 @@ $ docker exec -it myproject-mongooseim-2 /member/mongooseim/bin/mongooseimctl mn
 
 Tadaa! There you have a brand new shiny cluster running.
 
-Note that the first container is started with `-h mongooseim-1` and `--name mongooseim-1` parameters - a few things are important here:
+#### Manual clustering
 
-1. Both parameters must be set to the same value. The second and all the subsequent containers have the same requirement.
+With the manual clustering method, you need to explicitly specify the name of the node to join the cluster with via the `CLUSTER_WITH` environment variable.
+You may also disable clustering during container startup altogether by setting `JOIN_CLUSTER=false` variable (it's set to `true` by default).
 
-    * `-h` option sets `HOSTNAME` environment variable for the container. The [start.sh](https://github.com/esl/mongooseim-docker/blob/66666b9/member/start.sh#L11) script uses it to generate the Erlang node name.
-    * `--name` is required to provide automatic DNS resolution between the containers. See [Docker network documentation](https://docs.docker.com/network/bridge/#differences-between-user-defined-bridges-and-the-default-bridge) page for more details.
+##### Examples
 
-1. Format of the host name:
+Let's try providing a name of the node to join the cluster with manually:
 
-    * Host name of the first container must be in the `some_name-1` format. That allows [start.sh](https://github.com/esl/mongooseim-docker/blob/66666b9/member/start.sh#L50) to identify the primary node of the cluster.
-    * All the subsequent containers must follow the `some_name-N` host name format, where `N` > 1.
+```
+docker network create mim
+docker run -dt --net mim -h first-node --name first-node -e JOIN_CLUSTER=false mongooseim
+docker run -dt --net mim -h second-node --name second-node -e CLUSTER_WITH=mongooseim@first-node --name mongooseim-2 mongooseim
+```
 
-1. Clustering is done automatically by the [start.sh](https://github.com/esl/mongooseim-docker/blob/66666b9/member/start.sh#L50) script. If you want to modify that logic please check [the latest MongooseIM documentation](https://mongooseim.readthedocs.io/en/latest/operation-and-maintenance/Cluster-configuration-and-node-management/).
+Let's break up these commands on by one.
+
+The first command creates a network for nodes so that they reach each other via network by container name.
+The second command starts a node and tells it not to try to join any clusters (as there are no other nodes).
+We then tell the second node to join the cluster with the first node.
+
+You can now check that the nodes have formed the cluster:
+
+```
+$ docker exec -t mongooseim-1 /usr/lib/mongooseim/bin/mongooseimctl mnesia running_db_nodes
+['mongooseim@first-host','mongooseim@second-host']
+$ docker exec -t mongooseim-2 /usr/lib/mongooseim/bin/mongooseimctl mnesia running_db_nodes
+['mongooseim@second-host','mongooseim@first-host']
+```
 
 
 ### Adding backends
