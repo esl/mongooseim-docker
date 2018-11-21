@@ -98,19 +98,19 @@ First, we need to setup some volumes:
 ```
 ${VOLUMES}/
 ├── myproject-mongooseim-1
-│   ├── ejabberd.cfg
+│   ├── mongooseim.cfg
 │   ├── hosts
 │   ├── mongooseim
 │   └── mongooseim.tar.gz
 └── myproject-mongooseim-2
-    ├── ejabberd.cfg
+    ├── mongooseim.cfg
     ├── hosts
     ├── mongooseim
     └── mongooseim.tar.gz
 ```
 
 We're preparing a 2 node cluster hence two directories (`myproject-mongooseim-X`).
-The only file we need to place there is `ejabberd.cfg` (a predefined config file).
+The only file we need to place there is `mongooseim.cfg` (a predefined config file).
 The rest is actually created when we build our cluster member containers.
 
 The member container can be created with the following command
@@ -205,12 +205,12 @@ docker run -d --name mongooseim-postgres --network mim_cluster \
 ```
 
 Where `${PATH_TO_MONGOOSEIM_PGSQL_FILE}` is an absolute path to pgsql.sql file
-which can be found in MongooseIM's repo in `apps/ejabberd/priv/pgsql.sql`
+which can be found in MongooseIM's repo in `priv/pgsql.sql`
 
-Don't forget to tweak your `ejabberd.cfg` to connect with the services you set up!
+Don't forget to tweak your `mongooseim.cfg` to connect with the services you set up!
 For example, like this in case of the PostgreSQL container mentioned above:
 
 ```
-{odbc_server, {pgsql, "mongooseim-postgres", "mongooseim", "mongooseim", "mongooseim"}}.
+{rdbms_server, {pgsql, "mongooseim-postgres", "mongooseim", "mongooseim", "mongooseim"}}.
 ```
 

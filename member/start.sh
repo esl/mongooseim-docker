@@ -11,7 +11,7 @@ cd -
 NODE=mongooseim@${HOSTNAME}
 NODETYPE=sname:${NODE}
 CLUSTER_NODE=mongooseim@${HOSTNAME%-?}-1
-CLUSTER_COOKIE=ejabberd
+CLUSTER_COOKIE=mongooseim
 ROOT_DIR=${MIM_WORK_DIR}/mongooseim
 MNESIA_DIR=/var/lib/mongooseim/Mnesia.${NODE}
 LOGS_DIR=/var/log/mongooseim
@@ -20,7 +20,7 @@ ESCRIPT=`find ${ROOT_DIR} -name escript`
 ETC_DIR=${ROOT_DIR}/etc
 
 # if there are predefined config files available, use them
-FILES=( "/member/ejabberd.cfg" "/member/app.config" "/member/vm.args" "/member/vm.dist.args" )
+FILES=( "/member/mongooseim.cfg" "/member/app.config" "/member/vm.args" "/member/vm.dist.args" )
 for file in "${FILES[@]}"
 do
     [ -f "${file}" ] && cp "${file}" ${ETC_DIR}/
