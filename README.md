@@ -10,7 +10,7 @@ was bootstrapped from Paweł Pikuła's (@ppikula) great https://github.com/ppiku
 
 ## Quick start guide
 
-If you need vanila MongooseIM as found on https://github.com/esl/MongooseIM please use docker images from
+If you need vanilla MongooseIM as found on https://github.com/esl/MongooseIM please use docker images from
 https://hub.docker.com/r/mongooseim/mongooseim/
 
 If customised images are needed, following documentation may be useful.
@@ -49,13 +49,14 @@ By default the builder will use Erlang/OTP 20.3.
 
 #### Building MongooseIM
 
-Now building MongooseIM tarball is as simple as runing following command:
+Now building MongooseIM tarball is as simple as running the following command:
+
 ```
 docker exec -i mongooseim-builder /build.sh
 ```
 
 This command will by default build MongooseIM's master branch from: https://github.com/esl/MongooseIM.
-This can be changed by specificing parameter to the `build.sh` command:
+This can be changed by specifying a parameter to the `build.sh` command:
 
 ```
 /build.sh project_name repo commit
@@ -97,19 +98,19 @@ First, we need to setup some volumes:
 ```
 ${VOLUMES}/
 ├── myproject-mongooseim-1
-│   ├── ejabberd.cfg
+│   ├── mongooseim.cfg
 │   ├── hosts
 │   ├── mongooseim
 │   └── mongooseim.tar.gz
 └── myproject-mongooseim-2
-    ├── ejabberd.cfg
+    ├── mongooseim.cfg
     ├── hosts
     ├── mongooseim
     └── mongooseim.tar.gz
 ```
 
 We're preparing a 2 node cluster hence two directories (`myproject-mongooseim-X`).
-The only file we need to place there is `ejabberd.cfg` (a predefined config file).
+The only file we need to place there is `mongooseim.cfg` (a predefined config file).
 The rest is actually created when we build our cluster member containers.
 
 The member container can be created with the following command
@@ -154,15 +155,34 @@ There are two methods of clustering: the default, automatic one and a method whe
 
 #### Default clustering
 
-To use default clustering behaviour, your containers need both container names and host names with the `-n` suffix, where `n` are consecutive integers starting with `1`, e.g. `mongooseim-1`, `mongooseim-2` and so on.
-Make sure you have started a node with `-1` suffix first, as all the other nodes will connect to it when joining the cluster.
+To use default clustering behaviour, your containers need both container names (`--name` option) and host names (`-h` option) with the `-n` suffix,
+where `n` are consecutive integers starting with `1`, e.g. `mongooseim-1`, `mongooseim-2` and so on.
+Make sure you have started a node with `-1` suffix first (`-h mongooseim-1` and `--name mongooseim-1`), as all the other nodes will connect to it when joining the cluster.
+
+Few things are important here:
+
+1. Both parameters must be set to the same value. The second and all the subsequent containers have the same requirement.
+
+    * `-h` option sets `HOSTNAME` environment variable for the container. The [start.sh](https://github.com/esl/mongooseim-docker/blob/e5a2d22/member/start.sh#L11) script uses it to generate the Erlang node name.
+    * `--name` is required to provide automatic DNS resolution between the containers. See [Docker network documentation](https://docs.docker.com/network/bridge/#differences-between-user-defined-bridges-and-the-default-bridge) page for more details.
+
+1. Format of the host name:
+
+    * Host name of the first container must be in the `some_name-1` format. That allows [start.sh](https://github.com/esl/mongooseim-docker/blob/e5a2d22/member/start.sh#L58) to identify the primary node of the cluster.
+    * All the subsequent containers must follow the `some_name-N` host name format, where `N` > 1.
 
 ##### Example
 
-Let's start another cluster member:
+Create a user-defined bridge network and connect `mongooseim-1` container to it:
+```
+docker network create mim_cluster
+docker network connect mim_cluster mongooseim-1
+```
+
+And now let's start another cluster member:
 
 ```
-docker run -t -d -h mongooseim-2 --name mongooseim-2  mongooseim
+docker run -t -d --network mim_cluster -h mongooseim-2 --name mongooseim-2 mongooseim
 ```
 
 Redo the `docker logs` and `telnet` checks, but this time against `mongooseim-2`.
@@ -208,25 +228,27 @@ $ docker exec -t mongooseim-2 /usr/lib/mongooseim/bin/mongooseimctl mnesia runni
 ['mongooseim@second-host','mongooseim@first-host']
 ```
 
+
 ### Adding backends
 
 There are plenty of ready to use Docker images with databases
 or external services you might want to integrate with the cluster.
 For example, I'm running a [stock `postgres:9.6.1`](https://hub.docker.com/_/postgres/) container.
+
 ```
-docker run -d --name mongooseim-postgres \
+docker run -d --name mongooseim-postgres --network mim_cluster \
        -e POSTGRES_PASSWORD=mongooseim -e POSTGRES_USER=mongooseim \
        -v ${PATH_TO_MONGOOSEIM_PGSQL_FILE}:/docker-entrypoint-initdb.d/pgsql.sql:ro \
        -p 5432:5432 postgres:9.6.1
 ```
 
 Where `${PATH_TO_MONGOOSEIM_PGSQL_FILE}` is an absolute path to pgsql.sql file
-which can be found in MongooseIM's repo in `apps/ejabberd/priv/pgsql.sql`
+which can be found in MongooseIM's repo in `priv/pgsql.sql`
 
-Don't forget to tweak your `ejabberd.cfg` to connect with the services you set up!
+Don't forget to tweak your `mongooseim.cfg` to connect with the services you set up!
 For example, like this in case of the PostgreSQL container mentioned above:
 
 ```
-{odbc_server, {pgsql, "mongooseim-postgres", "mongooseim", "mongooseim", "mongooseim"}}.
+{rdbms_server, {pgsql, "mongooseim-postgres", "mongooseim", "mongooseim", "mongooseim"}}.
 ```
 
