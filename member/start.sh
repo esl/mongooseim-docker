@@ -8,8 +8,9 @@ cd /member
 [ -f /member/hosts ] && cat /member/hosts >> /etc/hosts
 cd -
 
-NODE=mongooseim@${HOSTNAME}
-NODETYPE=sname:${NODE}
+FQDN=$(hostname -f)
+NODE=mongooseim@${FQDN}
+NODETYPE=name:${NODE}
 CLUSTER_COOKIE=mongooseim
 ROOT_DIR=${MIM_WORK_DIR}/mongooseim
 MNESIA_DIR=/var/lib/mongooseim/Mnesia.${NODE}
@@ -54,15 +55,15 @@ function run() {
 }
 
 DEFAULT_CLUSTERING=0
-if [ "${CLUSTER_WITH}" = "" ]; then
-    CLUSTER_WITH="mongooseim@${HOSTNAME%-?}-1"
+if [ x"${CLUSTER_WITH}" = x"" ]; then
+    CLUSTER_WITH="mongooseim@${HOSTNAME%-?}-0".${FQDN#*.*}
     DEFAULT_CLUSTERING=1
 fi
 
 if [ "${JOIN_CLUSTER}" = "" ] || [ "${JOIN_CLUSTER}" = "true"] || [ "${JOIN_CLUSTER}" = "1" ]; then
     CLUSTERING_RESULT=0
     # don't cluster if default clustering is used and out suffix is -1
-    if [ $DEFAULT_CLUSTERING -eq 1 ] && [ x"${HOSTNAME##*-}" = x"1" ]; then
+    if [ $DEFAULT_CLUSTERING -eq 1 ] && [ x"${HOSTNAME##*-}" = x"0" ]; then
         echo "MongooseIM cluster primary node ${NODE}"
     elif [ ! -f "${MNESIA_DIR}/schema.DAT" ]; then
         echo "MongooseIM node ${NODE} joining ${CLUSTER_WITH}"
