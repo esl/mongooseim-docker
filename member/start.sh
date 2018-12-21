@@ -13,7 +13,7 @@ NODE_TYPE=${NODE_TYPE:-"sname"}
 [ "${NODE_TYPE}" = "name" ]  && NODE_HOST=$(hostname -f)
 
 # As HOSTNAME is not directly related to $(hostname -s) / $(hostname -f)
-# we cannot relay on it
+# we cannot rely on it
 HOSTNAME_SHORT=$(hostname -s)
 
 NODE_NAME=${NODE_NAME:-"mongooseim"}
@@ -65,14 +65,14 @@ function run() {
 DEFAULT_CLUSTERING=0
 if [ x"${CLUSTER_WITH}" = x"" ]; then
     # For short hostname - HOST_TAIL will be empty
-    # For long hostname - HOST_TAIL will contain all of it but the leading segement
+    # For long hostname - HOST_TAIL will contain all of it but the leading segment
     HOST_TAIL=$(echo $NODE_HOST | sed -e 's/^[^.]*//')
 
     CLUSTER_WITH="${NODE_NAME}@${HOSTNAME_SHORT%-?}-${MASTER_ORDINAL}${HOST_TAIL}"
     DEFAULT_CLUSTERING=1
 fi
 
-if [ "${JOIN_CLUSTER}" = "" ] || [ "${JOIN_CLUSTER}" = "true"] || [ "${JOIN_CLUSTER}" = "1" ]; then
+if [ x"${JOIN_CLUSTER}" = x"" ] || [ "${JOIN_CLUSTER}" = "true" ] || [ "${JOIN_CLUSTER}" = "1" ]; then
     CLUSTERING_RESULT=0
     # don't cluster if default clustering is used and out suffix is -1
     if [ $DEFAULT_CLUSTERING -eq 1 ] && [ x"${HOSTNAME_SHORT##*-}" = x"${MASTER_ORDINAL}" ]; then
