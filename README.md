@@ -156,20 +156,22 @@ There are two methods of clustering: the default, automatic one and a method whe
 #### Default clustering
 
 To use default clustering behaviour, your containers need both container names (`--name` option) and host names (`-h` option) with the `-n` suffix,
-where `n` are consecutive integers starting with `1`, e.g. `mongooseim-1`, `mongooseim-2` and so on.
-Make sure you have started a node with `-1` suffix first (`-h mongooseim-1` and `--name mongooseim-1`), as all the other nodes will connect to it when joining the cluster.
+where `n` are consecutive integers starting with `1` (configurable with `MASTER_ORDINAL` env variable), e.g. `mongooseim-1`, `mongooseim-2` and so on.
+Make sure you have started a node with `-${MASTER_ORDINAL}` suffix first (e.g. `-h mongooseim-1` and `--name mongooseim-1`), as all the other nodes will connect to it when joining the cluster.
 
 Few things are important here:
 
-1. Both parameters must be set to the same value. The second and all the subsequent containers have the same requirement.
+1. Both parameters must be set to the same value if used in docker/docker-compose. The second and all the subsequent containers have the same requirement.
 
-    * `-h` option sets `HOSTNAME` environment variable for the container. The [start.sh](https://github.com/esl/mongooseim-docker/blob/e5a2d22/member/start.sh#L11) script uses it to generate the Erlang node name.
+    * `-h` option sets `HOSTNAME` environment variable for the container which in turn sets long hostname of the machine. The [start.sh](https://github.com/esl/mongooseim-docker/blob/1948b42/member/start.sh#L20) script uses it to generate the Erlang node name if `NODE_TYPE=name`.
+    If `NODE_TYPE=sname` (default), short hostname will be used instead. If value provided to `-h` option is already short hostname, it will be used as is,
+    otherwise it will be shortened (longest part that doesn't contain '.' character).
     * `--name` is required to provide automatic DNS resolution between the containers. See [Docker network documentation](https://docs.docker.com/network/bridge/#differences-between-user-defined-bridges-and-the-default-bridge) page for more details.
 
 1. Format of the host name:
 
-    * Host name of the first container must be in the `some_name-1` format. That allows [start.sh](https://github.com/esl/mongooseim-docker/blob/e5a2d22/member/start.sh#L58) to identify the primary node of the cluster.
-    * All the subsequent containers must follow the `some_name-N` host name format, where `N` > 1.
+    * Host name of the first container must be in the `${NODE_NAME}-${MASTER_ORDINAL}` format. That allows [start.sh](https://github.com/esl/mongooseim-docker/blob/1948b42/member/start.sh#L71) to identify the primary node of the cluster.
+    * All the subsequent containers must follow the `${NODE_NAME}-N` host name format, where `N` > `${MASTER_ORDINAL}`.
 
 ##### Example
 
@@ -197,6 +199,15 @@ $ docker exec -it myproject-mongooseim-2 /member/mongooseim/bin/mongooseimctl mn
 ```
 
 Tadaa! There you have a brand new shiny cluster running.
+
+##### Kubernetes notes
+
+Default clustering may work as part of Kubernetes StatefulSet deployment with only two changes:
+
+* `MASTER_ORDINAL` has to be set to `0` as `StatefulSet` starts counting instances from 0
+* `NODE_TYPE` has to be set to `name` (use of long names) as Kubernetes uses FQDN within internal DNS to resolve `pod's` IP address.
+  Please note that for `pod` domain to work you have to have headless service running that matches your `StatefulSet`
+  (see https://kubernetes.io/docs/concepts/services-networking/service/#headless-services)
 
 #### Manual clustering
 
