@@ -8,9 +8,18 @@ cd /member
 [ -f /member/hosts ] && cat /member/hosts >> /etc/hosts
 cd -
 
-NODE=mongooseim@${HOSTNAME}
-NODETYPE=sname:${NODE}
-CLUSTER_COOKIE=mongooseim
+NODE_TYPE=${NODE_TYPE:-"sname"}
+[ "${NODE_TYPE}" = "sname" ] && NODE_HOST=$(hostname -s)
+[ "${NODE_TYPE}" = "name" ]  && NODE_HOST=$(hostname -f)
+
+# As HOSTNAME is not directly related to $(hostname -s) / $(hostname -f)
+# we cannot relay on it
+HOSTNAME_SHORT=$(hostname -s)
+
+NODE_NAME=${NODE_NAME:-"mongooseim"}
+NODE=${NODE_NAME}@${NODE_HOST}
+CLUSTER_COOKIE=${CLUSTER_COOKIE:-"mongooseim"}
+MASTER_ORDINAL=${MASTER_ORDINAL:-"1"}
 ROOT_DIR=${MIM_WORK_DIR}/mongooseim
 MNESIA_DIR=/var/lib/mongooseim/Mnesia.${NODE}
 LOGS_DIR=/var/log/mongooseim
@@ -27,7 +36,7 @@ done
 
 # make sure proper node name is used
 echo "vm.args:"
-sed -i -e "s/-sname.*$/-sname ${NODE}/" ${ETC_DIR}/vm.args
+sed -i -e "s/-s?${NODE_TYPE}.*$/-${NODE_TYPE} ${NODE}/" ${ETC_DIR}/vm.args
 cat ${ETC_DIR}/vm.args
 
 echo "app.config"
@@ -55,14 +64,18 @@ function run() {
 
 DEFAULT_CLUSTERING=0
 if [ x"${CLUSTER_WITH}" = x"" ]; then
-    CLUSTER_WITH="mongooseim@${HOSTNAME%-?}-1"
+    # For short hostname - HOST_TAIL will be empty
+    # For long hostname - HOST_TAIL will contain all of it but the leading segement
+    HOST_TAIL=$(echo $NODE_HOST | sed -e 's/^[^.]*//')
+
+    CLUSTER_WITH="${NODE_NAME}@${HOSTNAME_SHORT%-?}-${MASTER_ORDINAL}${HOST_TAIL}"
     DEFAULT_CLUSTERING=1
 fi
 
 if [ "${JOIN_CLUSTER}" = "" ] || [ "${JOIN_CLUSTER}" = "true"] || [ "${JOIN_CLUSTER}" = "1" ]; then
     CLUSTERING_RESULT=0
     # don't cluster if default clustering is used and out suffix is -1
-    if [ $DEFAULT_CLUSTERING -eq 1 ] && [ x"${HOSTNAME##*-}" = x"1" ]; then
+    if [ $DEFAULT_CLUSTERING -eq 1 ] && [ x"${HOSTNAME_SHORT##*-}" = x"${MASTER_ORDINAL}" ]; then
         echo "MongooseIM cluster primary node ${NODE}"
     elif [ ! -f "${MNESIA_DIR}/schema.DAT" ]; then
         echo "MongooseIM node ${NODE} joining ${CLUSTER_WITH}"
