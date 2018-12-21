@@ -54,7 +54,7 @@ function run() {
 }
 
 DEFAULT_CLUSTERING=0
-if [ "${CLUSTER_WITH}" = "" ]; then
+if [ x"${CLUSTER_WITH}" = x"" ]; then
     CLUSTER_WITH="mongooseim@${HOSTNAME%-?}-1"
     DEFAULT_CLUSTERING=1
 fi
