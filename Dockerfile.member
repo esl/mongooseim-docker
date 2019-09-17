@@ -8,6 +8,7 @@ EXPOSE 4369 5222 5269 5280 9100
 
 ARG BUILD_DATE
 ARG VCS_REF
+ARG VCS_REF_DESC
 ARG VERSION
 LABEL org.label-schema.name='MongooseIM' \
       org.label-schema.description='MongooseIM is a mobile messaging platform with focus on performance and scalability' \
@@ -17,6 +18,7 @@ LABEL org.label-schema.name='MongooseIM' \
       org.label-schema.schema-version='1.0' \
       org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.vcs-ref-desc=$VCS_REF_DESC \
       org.label-schema.version=$VERSION
 
 RUN apt-get update && apt-get install -y \
