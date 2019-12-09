@@ -192,9 +192,9 @@ The nodes should already form a cluster.
 Let's check it:
 
 ```
-$ docker exec -it myproject-mongooseim-1 /member/mongooseim/bin/mongooseimctl mnesia running_db_nodes
+$ docker exec -it myproject-mongooseim-1 /usr/lib/mongooseim/bin/mongooseimctl mnesia running_db_nodes
 ['mongooseim@myproject-mongooseim-2','mongooseim@myproject-mongooseim-1']
-$ docker exec -it myproject-mongooseim-2 /member/mongooseim/bin/mongooseimctl mnesia running_db_nodes
+$ docker exec -it myproject-mongooseim-2 /usr/lib/mongooseim/bin/mongooseimctl mnesia running_db_nodes
 ['mongooseim@myproject-mongooseim-1','mongooseim@myproject-mongooseim-2']
 ```
 
