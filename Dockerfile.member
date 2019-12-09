@@ -31,4 +31,5 @@ RUN apt-get update && apt-get install -y \
         odbc-postgresql && \
         apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+RUN tar xfz mongooseim.tar.gz -C /usr/lib || (echo "can't untar release" && exit 1)
 ENTRYPOINT ["/start.sh"]
