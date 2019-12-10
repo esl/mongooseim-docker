@@ -1,7 +1,7 @@
 FROM phusion/baseimage
 
 COPY ./member/start.sh /start.sh
-COPY ./member/mongooseim.tar.gz mongooseim.tar.gz
+ADD ./member/mongooseim.tar.gz /usr/lib/
 VOLUME ["/member", "/var/lib/mongooseim"]
 
 EXPOSE 4369 5222 5269 5280 9100

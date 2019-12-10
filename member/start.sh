@@ -2,7 +2,6 @@
 
 #set -x
 MIM_WORK_DIR="/usr/lib"
-tar xfz mongooseim.tar.gz -C ${MIM_WORK_DIR} || (echo "can't untar release" && exit 1)
 ls /member
 cd /member
 [ -f /member/hosts ] && cat /member/hosts >> /etc/hosts
