@@ -99,14 +99,10 @@ First, we need to setup some volumes:
 ${VOLUMES}/
 ├── myproject-mongooseim-1
 │   ├── mongooseim.cfg
-│   ├── hosts
-│   ├── mongooseim
-│   └── mongooseim.tar.gz
+│   └── hosts
 └── myproject-mongooseim-2
     ├── mongooseim.cfg
-    ├── hosts
-    ├── mongooseim
-    └── mongooseim.tar.gz
+    └── hosts
 ```
 
 We're preparing a 2 node cluster hence two directories (`myproject-mongooseim-X`).
@@ -116,30 +112,37 @@ The rest is actually created when we build our cluster member containers.
 The member container can be created with the following command
 
 ```
-docker run -t -d -h mongooseim-1 --name mongooseim-1  mongooseim
+docker run -t -d -P -h mongooseim-1 --name mongooseim-1  mongooseim
 ```
 
 After `docker logs mongooseim-1` shows something similar to:
 
 ```
+...
 MongooseIM cluster primary node mongooseim@myproject-mongooseim-1
 Clustered mongooseim@myproject-mongooseim-1 with mongooseim@myproject-mongooseim-1
 Exec: /member/mongooseim/erts-6.3/bin/erlexec -boot /member/mongooseim/releases//mongooseim -embedded -config /member/mongooseim/etc/app.config -args_file /member/mongooseim/etc/vm.args -- live --noshell -noinput +Bd -mnesia dir "/member/mongooseim/Mnesia.mongooseim@myproject-mongooseim-1"
 Root: /member/mongooseim
-2015-11-20 10:42:35.903 [info] <0.7.0> Application lager started on node 'mongooseim@myproject-mongooseim-1'
-...
-2015-11-20 10:42:36.420 [info] <0.145.0>@ejabberd_app:do_notify_fips_mode:270 Used Erlang/OTP does not support FIPS mode
-2015-11-20 10:42:36.453 [info] <0.7.0> Application mnesia exited with reason: stopped
-2015-11-20 10:42:36.535 [info] <0.7.0> Application mnesia started on node 'mongooseim@myproject-mongooseim-1'
-2015-11-20 10:42:36.571 [info] <0.7.0> Application p1_cache_tab started on node 'mongooseim@myproject-mongooseim-1'
+13:58:03.167 [info] msg: "Starting reporters with []\n", options: []
+13:58:03.334 [notice] Changed loglevel of /var/log/mongooseim/ejabberd.log to info
+13:58:03.357 [info] Application mnesia exited with reason: stopped
+13:58:03.752 [notice] Changed loglevel of /var/log/mongooseim/ejabberd.log to warning
 ```
 
 We can health-check the MongooseIM node with `telnet`.
-Supply the IP based on your setup - Docker Machine or localhost - and port
-which translates to the container's 5222:
+To do that, you need to provide the IP of the container (usually 127.0.0.1) and the published TCP port which translates to container’s port 5222.
+In order to find the port you can use the following docker command:
 
 ```
-$ telnet $BOOT2DOCKER_IP 32822
+docker ps -f "name=mongooseim-1" --format "{{.Names}}: {{.Ports}}"
+mongooseim-1: 0.0.0.0:32772->4369/tcp, 0.0.0.0:32771->5222/tcp, 0.0.0.0:32770->5269/tcp, 0.0.0.0:32769->5280/tcp, 0.0.0.0:32768->9100/tcp
+```
+
+In the example above you can see that port 5222 inside the container was published on port 32771 on the docker host machine.
+It can be used to check if the server is really listening on that port:
+
+```
+$ telnet 127.0.0.1 32771
 Trying 192.168.99.100...
 Connected to 192.168.99.100.
 Escape character is '^]'.
@@ -257,9 +260,4 @@ Where `${PATH_TO_MONGOOSEIM_PGSQL_FILE}` is an absolute path to pgsql.sql file
 which can be found in MongooseIM's repo in `priv/pgsql.sql`
 
 Don't forget to tweak your `mongooseim.cfg` to connect with the services you set up!
-For example, like this in case of the PostgreSQL container mentioned above:
-
-```
-{rdbms_server, {pgsql, "mongooseim-postgres", "mongooseim", "mongooseim", "mongooseim"}}.
-```
-
+See the documentation at https://mongooseim.readthedocs.io/en/latest/advanced-configuration/outgoing-connections/
