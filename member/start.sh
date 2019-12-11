@@ -27,10 +27,10 @@ ESCRIPT=`find ${ROOT_DIR} -name escript`
 ETC_DIR=${ROOT_DIR}/etc
 
 # if there are predefined config files available, use them
-FILES=( "/member/mongooseim.cfg" "/member/app.config" "/member/vm.args" "/member/vm.dist.args" )
+FILES=( "mongooseim.cfg" "app.config" "vm.args" "vm.dist.args" )
 for file in "${FILES[@]}"
 do
-    [ -f "${file}" ] && cp "${file}" ${ETC_DIR}/
+    [ -f "/member/${file}" ] && ln -sf "/member/${file}" ${ETC_DIR}/${file}
 done
 
 # make sure proper node name is used
