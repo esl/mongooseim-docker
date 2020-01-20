@@ -67,7 +67,7 @@ if [ x"${CLUSTER_WITH}" = x"" ]; then
     # For long hostname - HOST_TAIL will contain all of it but the leading segment
     HOST_TAIL=$(echo $NODE_HOST | sed -e 's/^[^.]*//')
 
-    CLUSTER_WITH="${NODE_NAME}@${HOSTNAME_SHORT%-?}-${MASTER_ORDINAL}${HOST_TAIL}"
+    CLUSTER_WITH="${NODE_NAME}@${HOSTNAME_SHORT%-*}-${MASTER_ORDINAL}${HOST_TAIL}"
     DEFAULT_CLUSTERING=1
 fi
 
