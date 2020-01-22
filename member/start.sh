@@ -41,6 +41,7 @@ cat ${ETC_DIR}/vm.args
 echo "app.config"
 sed -i -e "s,%{mnesia.*,{mnesia\, [{dir\, \"${MNESIA_DIR}\"}]}\,," ${ETC_DIR}/app.config
 sed -i -e "s,{log_root.*,{log_root\, \"/var/log/mongooseim\"}\,," ${ETC_DIR}/app.config
+sed -i -e "s,{prefix.*,{prefix\, \"${HOSTNAME}\"}\,," ${ETC_DIR}/app.config
 cat ${ETC_DIR}/app.config
 
 echo "vm.dist.args"
