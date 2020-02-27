@@ -1,4 +1,4 @@
-FROM phusion/baseimage
+FROM phusion/baseimage:master
 
 COPY ./member/start.sh /start.sh
 COPY ./member/mongooseim.tar.gz mongooseim.tar.gz
@@ -20,6 +20,7 @@ LABEL org.label-schema.name='MongooseIM' \
       org.label-schema.version=$VERSION
 
 RUN apt-get update && apt-get install -y \
+        libssl1.1 \
         iproute2 \
         netcat \
         inetutils-ping \
