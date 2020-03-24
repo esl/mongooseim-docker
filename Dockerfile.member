@@ -1,4 +1,4 @@
-FROM phusion/baseimage
+FROM phusion/baseimage:master
 
 COPY ./member/start.sh /start.sh
 ADD ./member/mongooseim.tar.gz /usr/lib/
@@ -28,6 +28,7 @@ RUN apt-get update && apt-get install -y \
         telnet \
         unixodbc \
         tdsodbc \
+        zlib1g \
         odbc-postgresql && \
         apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
