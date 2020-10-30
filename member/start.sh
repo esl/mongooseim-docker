@@ -27,7 +27,7 @@ ESCRIPT=`find ${ROOT_DIR} -name escript`
 ETC_DIR=${ROOT_DIR}/etc
 
 # if there are predefined config files available, use them
-FILES=( "mongooseim.cfg" "app.config" "vm.args" "vm.dist.args" )
+FILES=( "mongooseim.toml" "app.config" "vm.args" "vm.dist.args" )
 for file in "${FILES[@]}"
 do
     [ -f "/member/${file}" ] && ln -sf "/member/${file}" ${ETC_DIR}/${file}
