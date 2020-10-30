@@ -1,6 +1,6 @@
-FROM phusion/baseimage:master
+FROM phusion/baseimage:18.04-1.0.0
 
-ARG OTP_VSN=22.3-1
+ARG OTP_VSN=23.1-1
 
 # required packages
 RUN apt-get update && apt-get install -y \
