@@ -1,0 +1,29 @@
+FROM garazdawi/otp:mongoose-master-nojit
+
+RUN cd /buildroot/otp && make install
+
+# required packages
+RUN apt-get update && apt-get install -y \
+    bash \
+    bash-completion \
+    wget \
+    git \
+    make \
+    gcc \
+    g++ \
+    vim \
+    bash-completion \
+    libc6-dev \
+    libncurses5-dev \
+    libssl-dev \
+    libexpat1-dev \
+    libpam0g-dev \
+    unixodbc-dev \
+    gnupg \
+    zlib1g-dev \
+    wget
+
+COPY ./builder/build.sh /build.sh
+VOLUME /builds
+
+CMD ["/sbin/my_init"]
