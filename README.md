@@ -91,7 +91,9 @@ MongooseIM can be build now from `Dockerfile.member`. In order to build the imag
 the MongooseIM tarball has to be copied to `members` directory.
 The image can now be build with this command:
 
-`docker build -f Dockerfile.member -t mongooseim .`
+```
+docker build -f Dockerfile.member -t mongooseim .
+```
 
 First, we need to setup some volumes:
 

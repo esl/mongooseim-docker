@@ -1,4 +1,4 @@
-FROM phusion/baseimage:18.04-1.0.0
+FROM ubuntu:20.04
 
 COPY ./member/start.sh /start.sh
 ADD ./member/mongooseim.tar.gz /usr/lib/
@@ -21,15 +21,25 @@ LABEL org.label-schema.name='MongooseIM' \
       org.label-schema.vcs-ref-desc=$VCS_REF_DESC \
       org.label-schema.version=$VERSION
 
-RUN apt-get update && apt-get install -y \
-        libssl1.1 \
-        iproute2 \
-        netcat \
-        inetutils-ping \
-        telnet \
-        unixodbc \
-        tdsodbc \
-        odbc-postgresql && \
-        apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# handle tzdata config in a non-interactive fashion
+RUN export DEBIAN_FRONTEND=noninteractive; \
+    export DEBCONF_NONINTERACTIVE_SEEN=true; \
+    echo 'tzdata tzdata/Areas select Europe' | debconf-set-selections; \
+    echo 'tzdata tzdata/Zones/Etc select Warsaw' | debconf-set-selections; \
+    apt-get update -qqy \
+ && apt-get install -qqy --no-install-recommends \
+    tzdata
+
+RUN apt-get update \
+ && apt-get install -qqy --no-install-recommends \
+    libssl1.1 \
+    iproute2 \
+    netcat \
+    inetutils-ping \
+    telnet \
+    unixodbc \
+    tdsodbc \
+    odbc-postgresql && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ENTRYPOINT ["/start.sh"]
