@@ -13,13 +13,13 @@ was bootstrapped from Paweł Pikuła's (@ppikula) great https://github.com/ppiku
 If you need vanilla MongooseIM as found on https://github.com/esl/MongooseIM please use docker images from
 https://hub.docker.com/r/mongooseim/mongooseim/
 
-If customised images are needed, following documentation may be useful.
+If customised images are needed, the following documentation may be useful.
 
 ### Build a MongooseIM tarball
 
 #### The builder container
 
-In order to build MongooseIM tarball a builder image and container need to be created.
+In order to build a MongooseIM tarball, a builder image and container need to be created.
 You can create an image by running the following command:
 
 ```
@@ -27,7 +27,7 @@ docker build -f Dockerfile.builder -t mongooseim-builder .
 ```
 
 After that you can run the builder container.
-It's important to mount the container's `/builds` directory as a volume because MongooseIM tarball will be placed there after the build.
+It's important to mount the container's `/builds` directory as a volume because the MongooseIM tarball will be placed there after the build.
 For simplicity it's assumed that env var `VOLUMES` is exported and set to an existing absolute path, f.e: `pwd`
 
 ```
@@ -35,21 +35,20 @@ docker run -d --name mongooseim-builder -h mongooseim-builder \
        -v ${VOLUMES}/builds:/builds mongooseim/mongooseim-builder
 ```
 
-##### Modifying Erlang/OTP version
+##### Modifying the Erlang/OTP version
 
 You can modify which Erlang/OTP version is used by MongooseIM when creating a builder image by providing `OTP_VSN` build argument:
-
 
 ```
 docker build --build-arg OTP_VSN=19.3.6 -f Dockerfile.builder -t mongooseim-builder:otp19.3.6 .
 ```
 
-By default the builder will use Erlang/OTP 20.3.
+By default the builder will use Erlang/OTP 23.2.
 
 
 #### Building MongooseIM
 
-Now building MongooseIM tarball is as simple as running the following command:
+Now building a MongooseIM tarball is as simple as running the following command:
 
 ```
 docker exec -i mongooseim-builder /build.sh
@@ -68,7 +67,7 @@ This can be changed by specifying a parameter to the `build.sh` command:
 
 * `repo` - where to checkout from
 
-In order to build a specific commit, following command can be used:
+In order to build a specific commit, the following command can be used:
 
 ```
 docker exec -i mongooseim-builder /build.sh MongooseIM https://github.com/esl/MongooseIM a37c196
@@ -78,7 +77,7 @@ A log file of the build is available at `/builds/build.log`,
 so it's accessible from the host system at `${VOLUMES}/builds/build.log`.
 
 Finally, a tarball you get after a successful build will land
-at `${VOLUMES}/builds/mongooseim-myproject-3414588-2015-11-20_095715.tar.gz`
+at `${VOLUMES}/builds/mongooseim-myproject-3414588-2021-01-20_095715.tar.gz`
 (it's `mongooseim-${PROJECT}-${COMMIT}-${TIMESTAMP}.tar.gz`).
 
 
@@ -88,7 +87,7 @@ at `${VOLUMES}/builds/mongooseim-myproject-3414588-2015-11-20_095715.tar.gz`
 
 Provided a tarball was produced by mongooseim-builder a small image with only
 MongooseIM can be build now from `Dockerfile.member`. In order to build the image
-the MongooseIM tarball has to be copied to `members` directory.
+the MongooseIM tarball has to be copied to the `members` directory.
 The image can now be build with this command:
 
 `docker build -f Dockerfile.member -t mongooseim .`
@@ -98,15 +97,15 @@ First, we need to setup some volumes:
 ```
 ${VOLUMES}/
 ├── myproject-mongooseim-1
-│   ├── mongooseim.cfg
+│   ├── mongooseim.toml
 │   └── hosts
 └── myproject-mongooseim-2
-    ├── mongooseim.cfg
+    ├── mongooseim.toml
     └── hosts
 ```
 
 We're preparing a 2 node cluster hence two directories (`myproject-mongooseim-X`).
-The only file we need to place there is `mongooseim.cfg` (a predefined config file).
+The only file we need to place there is `mongooseim.toml` (a predefined config file).
 The rest is actually created when we build our cluster member containers.
 
 The member container can be created with the following command
@@ -158,7 +157,7 @@ There are two methods of clustering: the default, automatic one and a method whe
 
 #### Default clustering
 
-To use default clustering behaviour, your containers need both container names (`--name` option) and host names (`-h` option) with the `-n` suffix,
+To use the default clustering behaviour, your containers need both container names (`--name` option) and host names (`-h` option) with the `-n` suffix,
 where `n` are consecutive integers starting with `1` (configurable with `MASTER_ORDINAL` env variable), e.g. `mongooseim-1`, `mongooseim-2` and so on.
 Make sure you have started a node with `-${MASTER_ORDINAL}` suffix first (e.g. `-h mongooseim-1` and `--name mongooseim-1`), as all the other nodes will connect to it when joining the cluster.
 
@@ -259,5 +258,5 @@ docker run -d --name mongooseim-postgres --network mim_cluster \
 Where `${PATH_TO_MONGOOSEIM_PGSQL_FILE}` is an absolute path to pgsql.sql file
 which can be found in MongooseIM's repo in `priv/pgsql.sql`
 
-Don't forget to tweak your `mongooseim.cfg` to connect with the services you set up!
+Don't forget to tweak your `mongooseim.toml` to connect with the services you set up!
 See the documentation at https://mongooseim.readthedocs.io/en/latest/advanced-configuration/outgoing-connections/
