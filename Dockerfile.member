@@ -1,4 +1,4 @@
-FROM phusion/baseimage:focal-1.0.0-alpha1-amd64
+FROM phusion/baseimage:focal-1.0.0
 
 COPY ./member/start.sh /start.sh
 ADD ./member/mongooseim.tar.gz /usr/lib/

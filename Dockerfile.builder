@@ -1,4 +1,4 @@
-FROM phusion/baseimage:focal-1.0.0-alpha1-amd64
+FROM phusion/baseimage:focal-1.0.0
 
 ARG OTP_VSN=23.1-1
 
