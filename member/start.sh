@@ -60,6 +60,7 @@ function run() {
         mongooseimctl $1
     fi
 }
+mongooseimctl bootstrap
 
 DEFAULT_CLUSTERING=0
 if [ x"${CLUSTER_WITH}" = x"" ]; then
