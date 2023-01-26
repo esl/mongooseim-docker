@@ -61,6 +61,9 @@ function run() {
     fi
 }
 
+# Run initial configuration scripts
+mongooseimctl bootstrap
+
 DEFAULT_CLUSTERING=0
 if [ x"${CLUSTER_WITH}" = x"" ]; then
     # For short hostname - HOST_TAIL will be empty
