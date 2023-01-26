@@ -1,4 +1,4 @@
-FROM phusion/baseimage:focal-1.0.0-alpha1-amd64
+FROM phusion/baseimage:jammy-1.0.1
 
 COPY ./member/start.sh /start.sh
 ADD ./member/mongooseim.tar.gz /usr/lib/
@@ -22,7 +22,7 @@ LABEL org.label-schema.name='MongooseIM' \
       org.label-schema.version=$VERSION
 
 RUN apt-get update && apt-get install -y \
-        libssl1.1 \
+        libssl3 \
         iproute2 \
         netcat \
         inetutils-ping \
