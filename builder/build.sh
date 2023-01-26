@@ -29,7 +29,8 @@ build () {
         git describe --always >> ${version_file}
     local build_success=$?
     local timestamp=$(date +%F_%H%M%S)
-    local tarball="mongooseim-${name}-${commit}-${timestamp}.tar.gz"
+    local tarball_default="mongooseim-${name}-${commit}-${timestamp}.tar.gz"
+    local tarball=${TARBALL_NAME:-$tarball_default}
     if [ $build_success = 0 ]; then
         cd _build/prod/rel && \
             tar cfzh ${BUILDS}/${tarball} mongooseim && \
@@ -43,4 +44,5 @@ build () {
     exit 2
 }
 
+sudo chmod 777 "$BUILDS"
 build $@

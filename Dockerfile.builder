@@ -1,11 +1,10 @@
-FROM phusion/baseimage:jammy-1.0.1
-
-ARG OTP_VSN=23.1-1
+ARG OTP_VSN=25.2
+FROM chrzaszcz/cimg-erlang:$OTP_VSN
 
 # required packages
-RUN apt-get update && apt-get install -y \
+# remove a weird lock file
+RUN sudo apt-get update && sudo apt-get install -y \
     bash \
-    bash-completion \
     wget \
     git \
     make \
@@ -20,13 +19,8 @@ RUN apt-get update && apt-get install -y \
     libpam0g-dev \
     unixodbc-dev \
     gnupg \
-    zlib1g-dev \
-    wget && \
-    wget http://packages.erlang-solutions.com/erlang-solutions_2.0_all.deb && \
-    dpkg -i erlang-solutions_2.0_all.deb && \
-    apt-get update && \
-    apt-get install -y esl-erlang=1:$OTP_VSN && \
-    apt-get clean
+    zlib1g-dev && \
+    sudo apt-get clean
 
 COPY ./builder/build.sh /build.sh
 VOLUME /builds

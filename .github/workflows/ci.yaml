@@ -1,0 +1,16 @@
+name: ci
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Build
+    runs-on: 'ubuntu-20.04'
+    steps:
+      - uses: actions/checkout@v2
+      - run: ./build.sh
