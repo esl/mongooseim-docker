@@ -14,3 +14,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: ./build.sh
+      - run: ./smoke_test.sh
