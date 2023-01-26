@@ -36,4 +36,4 @@ LABEL org.label-schema.name='MongooseIM' \
 COPY ./member/start.sh /start.sh
 ADD ./member/mongooseim.tar.gz /usr/lib/
 
-ENTRYPOINT ["/start.sh"]
+CMD ["/start.sh"]
