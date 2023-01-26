@@ -4,6 +4,9 @@ VOLUME ["/member", "/var/lib/mongooseim"]
 
 EXPOSE 4369 5222 5269 5280 9100
 
+# Allow an easy access to mongooseim and mongooseimctl commands
+ENV PATH="${PATH}:/usr/lib/mongooseim/bin"
+
 RUN apt-get update && apt-get install -y \
         libssl3 \
         iproute2 \
