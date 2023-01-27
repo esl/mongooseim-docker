@@ -1,10 +1,22 @@
 FROM phusion/baseimage:jammy-1.0.1
 
-COPY ./member/start.sh /start.sh
-ADD ./member/mongooseim.tar.gz /usr/lib/
 VOLUME ["/member", "/var/lib/mongooseim"]
 
 EXPOSE 4369 5222 5269 5280 9100
+
+# Allow an easy access to mongooseim and mongooseimctl commands
+ENV PATH="${PATH}:/usr/lib/mongooseim/bin"
+
+RUN apt-get update && apt-get install -y \
+        libssl3 \
+        iproute2 \
+        netcat \
+        inetutils-ping \
+        telnet \
+        unixodbc \
+        tdsodbc \
+        odbc-postgresql && \
+        apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ARG BUILD_DATE
 ARG VCS_REF
@@ -21,15 +33,7 @@ LABEL org.label-schema.name='MongooseIM' \
       org.label-schema.vcs-ref-desc=$VCS_REF_DESC \
       org.label-schema.version=$VERSION
 
-RUN apt-get update && apt-get install -y \
-        libssl3 \
-        iproute2 \
-        netcat \
-        inetutils-ping \
-        telnet \
-        unixodbc \
-        tdsodbc \
-        odbc-postgresql && \
-        apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+COPY ./member/start.sh /start.sh
+ADD ./member/mongooseim.tar.gz /usr/lib/
 
-ENTRYPOINT ["/start.sh"]
+CMD ["/start.sh"]

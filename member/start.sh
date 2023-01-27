@@ -61,6 +61,11 @@ function run() {
     fi
 }
 
+# Run initial configuration scripts
+if [ x"${BOOTSTRAP_ENABLED}" = "true" ] || [ "${BOOTSTRAP_ENABLED}" = "1" ]; then
+    mongooseimctl bootstrap
+fi
+
 DEFAULT_CLUSTERING=0
 if [ x"${CLUSTER_WITH}" = x"" ]; then
     # For short hostname - HOST_TAIL will be empty
