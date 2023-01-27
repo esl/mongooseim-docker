@@ -2,7 +2,6 @@ ARG OTP_VSN=25.2
 FROM chrzaszcz/cimg-erlang:$OTP_VSN
 
 # required packages
-# remove a weird lock file
 RUN sudo apt-get update && sudo apt-get install -y \
     bash \
     wget \

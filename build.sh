@@ -3,7 +3,7 @@
 set -e
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 
-# Build a builder image (contains erlang and build tooks)
+# Build a builder image (contains erlang and the build tools)
 docker build -f Dockerfile.builder -t mongooseim-builder .
 
 # Create a volume for the result tarballs

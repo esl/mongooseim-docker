@@ -62,7 +62,9 @@ function run() {
 }
 
 # Run initial configuration scripts
-mongooseimctl bootstrap
+if [ "${BOOTSTRAP_ENABLED}" = "true" ] || [ "${BOOTSTRAP_ENABLED}" = "1" ]; then
+    mongooseimctl bootstrap
+fi
 
 DEFAULT_CLUSTERING=0
 if [ x"${CLUSTER_WITH}" = x"" ]; then
