@@ -62,7 +62,7 @@ function run() {
 }
 
 # Run initial configuration scripts
-if [ x"${BOOTSTRAP_ENABLED}" = "true" ] || [ "${BOOTSTRAP_ENABLED}" = "1" ]; then
+if [ "${BOOTSTRAP_ENABLED}" = "true" ] || [ "${BOOTSTRAP_ENABLED}" = "1" ]; then
     mongooseimctl bootstrap
 fi
 
