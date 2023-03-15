@@ -1,0 +1,4 @@
+member/start.sh
+member/build.log
+member/*.tar.gz
+*~

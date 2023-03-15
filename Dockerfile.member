@@ -22,6 +22,8 @@ ARG BUILD_DATE
 ARG VCS_REF
 ARG VCS_REF_DESC
 ARG VERSION
+ARG TARGETARCH
+
 LABEL org.label-schema.name='MongooseIM' \
       org.label-schema.description='MongooseIM is a mobile messaging platform with focus on performance and scalability' \
       org.label-schema.url='https://www.erlang-solutions.com/products/mongooseim.html' \
@@ -34,6 +36,6 @@ LABEL org.label-schema.name='MongooseIM' \
       org.label-schema.version=$VERSION
 
 COPY ./member/start.sh /start.sh
-ADD ./member/mongooseim.tar.gz /usr/lib/
+ADD ./member/mongooseim-$TARGETARCH.tar.gz /usr/lib/
 
 CMD ["/start.sh"]

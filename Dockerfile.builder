@@ -1,5 +1,5 @@
-ARG OTP_VSN=25.2
-FROM chrzaszcz/cimg-erlang:$OTP_VSN
+ARG OTP_VSN=25.2.3
+FROM mongooseim/cimg-erlang:$OTP_VSN
 
 # required packages
 RUN sudo apt-get update && sudo apt-get install -y \
@@ -24,4 +24,4 @@ RUN sudo apt-get update && sudo apt-get install -y \
 COPY ./builder/build.sh /build.sh
 VOLUME /builds
 
-CMD ["/sbin/my_init"]
+CMD ["/build.sh"]

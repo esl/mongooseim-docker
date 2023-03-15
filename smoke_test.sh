@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 set -e
-IMAGE=${IMAGE:-mongooseim}
+IMAGE_TAG=${IMAGE_TAG:-mongooseim}
 
 echo "Start MongooseIM container"
 docker rm -f mongooseim-smoke
-docker run --name=mongooseim-smoke -e JOIN_CLUSTER=false -e BOOTSTRAP_ENABLED=true -d mongooseim
+docker run --name=mongooseim-smoke -e JOIN_CLUSTER=false -e BOOTSTRAP_ENABLED=true -d $IMAGE_TAG
 
 CTL="docker exec mongooseim-smoke mongooseimctl"
 

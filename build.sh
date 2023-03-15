@@ -10,11 +10,11 @@ docker build -f Dockerfile.builder -t mongooseim-builder .
 docker volume create mongooseim-builds || echo "Probably already created volume"
 
 # Build MongooseIM release
-docker run --rm -v mongooseim-builds:/builds -e TARBALL_NAME=mongooseim.tar.gz mongooseim-builder /build.sh
+docker run --rm -v mongooseim-builds:/builds -e TARBALL_NAME=mongooseim mongooseim-builder
 
-# Copy our build artifact
+# Copy the latest build artifact
 CID=$(docker run --rm -d -v mongooseim-builds:/builds busybox sleep 1000)
-docker cp $CID:/builds/mongooseim.tar.gz ./member/
+docker cp $CID:/builds/. ./member/
 docker rm -f $CID
 
 # Build a final image

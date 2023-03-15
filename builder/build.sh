@@ -6,7 +6,6 @@
 
 BUILDS=${BUILDS:-/builds}
 LOGFILE=${LOGFILE:-$BUILDS/build.log}
-TIMESTAMP=$(date +%F_%H%M%S)
 
 log () {
     echo \[$(date '+%F %H:%M:%S')\] $@
@@ -29,8 +28,8 @@ build () {
         git describe --always >> ${version_file}
     local build_success=$?
     local timestamp=$(date +%F_%H%M%S)
-    local tarball_default="mongooseim-${name}-${commit}-${timestamp}.tar.gz"
-    local tarball=${TARBALL_NAME:-$tarball_default}
+    local tarball_default="mongooseim-${name}-${commit}-${timestamp}"
+    local tarball=${TARBALL_NAME:-$tarball_default}-${ARCH}.tar.gz
     if [ $build_success = 0 ]; then
         cd _build/prod/rel && \
             tar cfzh ${BUILDS}/${tarball} mongooseim && \
