@@ -1,4 +1,4 @@
-ARG OTP_VSN=25.2.3
+ARG OTP_VSN=26.1.2
 FROM mongooseim/cimg-erlang:$OTP_VSN
 
 # required packages
