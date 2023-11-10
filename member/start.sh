@@ -7,9 +7,13 @@ cd /member
 [ -f /member/hosts ] && cat /member/hosts >> /etc/hosts
 cd -
 
+get_hostname() {
+    [ "${NODE_TYPE}" = "sname" ] && hostname -s
+    [ "${NODE_TYPE}" = "name" ]  && hostname -f
+}
+
 NODE_TYPE=${NODE_TYPE:-"sname"}
-[ "${NODE_TYPE}" = "sname" ] && NODE_HOST=$(hostname -s)
-[ "${NODE_TYPE}" = "name" ]  && NODE_HOST=$(hostname -f)
+NODE_HOST=${NODE_HOST:-"$(get_hostname)"}
 
 # As HOSTNAME is not directly related to $(hostname -s) / $(hostname -f)
 # we cannot rely on it
