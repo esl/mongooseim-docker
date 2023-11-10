@@ -169,6 +169,7 @@ Few things are important here:
     * `-h` option sets `HOSTNAME` environment variable for the container which in turn sets long hostname of the machine. The [start.sh](https://github.com/esl/mongooseim-docker/blob/1948b42/member/start.sh#L20) script uses it to generate the Erlang node name if `NODE_TYPE=name`.
     If `NODE_TYPE=sname` (default), short hostname will be used instead. If value provided to `-h` option is already short hostname, it will be used as is,
     otherwise it will be shortened (longest part that doesn't contain '.' character).
+    If you need to make the host part of the node name different from `HOSTNAME` (or use an IP address instead), you can do it with the `NODE_HOST` environment variable, e.g. `-e NODE_HOST=192.168.1.1`.
     * `--name` is required to provide automatic DNS resolution between the containers. See [Docker network documentation](https://docs.docker.com/network/bridge/#differences-between-user-defined-bridges-and-the-default-bridge) page for more details.
 
 1. Format of the host name:
