@@ -30,6 +30,10 @@ EPMD=`find ${ROOT_DIR} -name epmd`
 ESCRIPT=`find ${ROOT_DIR} -name escript`
 ETC_DIR=${ROOT_DIR}/etc
 
+#default enable overwriting / updating configuration files
+UPDATE_VMARGS=${UPDATE_VMARGS:-"1"}
+UPDATE_APPCONFIG=${UPDATE_APPCONFIG:-"1"}
+
 # if there are predefined config files available, use them
 FILES=( "mongooseim.toml" "app.config" "vm.args" "vm.dist.args" )
 for file in "${FILES[@]}"
@@ -37,15 +41,19 @@ do
     [ -f "/member/${file}" ] && ln -sf "/member/${file}" ${ETC_DIR}/${file}
 done
 
-# make sure proper node name is used
-echo "vm.args:"
-sed -i -E -e "s/^-s?name.*$/-${NODE_TYPE} ${NODE}/" ${ETC_DIR}/vm.args
-cat ${ETC_DIR}/vm.args
+if [ "${UPDATE_VMARGS}" = "true" ] || [ "${UPDATE_VMARGS}" = "1" ]; then
+    # make sure proper node name is used
+    echo "vm.args:"
+    sed -i -E -e "s/^-s?name.*$/-${NODE_TYPE} ${NODE}/" ${ETC_DIR}/vm.args
+    cat ${ETC_DIR}/vm.args
+fi
 
-echo "app.config"
-sed -i -e "s,%{mnesia.*,{mnesia\, [{dir\, \"${MNESIA_DIR}\"}]}\,," ${ETC_DIR}/app.config
-sed -i -e "s,{log_root.*,{log_root\, \"/var/log/mongooseim\"}\,," ${ETC_DIR}/app.config
-cat ${ETC_DIR}/app.config
+if [ "${UPDATE_APPCONFIG}" = "true" ] || [ "${UPDATE_APPCONFIG}" = "1" ]; then
+    echo "app.config"
+    sed -i -e "s,%{mnesia.*,{mnesia\, [{dir\, \"${MNESIA_DIR}\"}]}\,," ${ETC_DIR}/app.config
+    sed -i -e "s,{log_root.*,{log_root\, \"/var/log/mongooseim\"}\,," ${ETC_DIR}/app.config
+    cat ${ETC_DIR}/app.config
+fi
 
 echo "vm.dist.args"
 cat ${ETC_DIR}/vm.dist.args
