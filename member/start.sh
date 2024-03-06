@@ -38,17 +38,26 @@ do
 done
 
 # make sure proper node name is used
-echo "vm.args:"
 sed -i -E -e "s/^-s?name.*$/-${NODE_TYPE} ${NODE}/" ${ETC_DIR}/vm.args
-cat ${ETC_DIR}/vm.args
 
-echo "app.config"
+# Change paths
 sed -i -e "s,%{mnesia.*,{mnesia\, [{dir\, \"${MNESIA_DIR}\"}]}\,," ${ETC_DIR}/app.config
 sed -i -e "s,{log_root.*,{log_root\, \"/var/log/mongooseim\"}\,," ${ETC_DIR}/app.config
-cat ${ETC_DIR}/app.config
 
-echo "vm.dist.args"
-cat ${ETC_DIR}/vm.dist.args
+# Set env variable PRINT_CONFIG_FILES_ON_START=true to debug configs
+if [ "${PRINT_CONFIG_FILES_ON_START}" = "true" ]; then
+    echo "vm.args:"
+    cat ${ETC_DIR}/vm.args
+
+    echo "app.config:"
+    cat ${ETC_DIR}/app.config
+
+    echo "vm.dist.args:"
+    cat ${ETC_DIR}/vm.dist.args
+
+    echo "mongooseim.toml:"
+    cat ${ETC_DIR}/mongooseim.toml
+fi
 
 #file "${MNESIA_DIR}/schema.DAT"
 
