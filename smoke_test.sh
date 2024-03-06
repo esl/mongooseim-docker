@@ -21,6 +21,9 @@ $CTL account registerUser --domain localhost --password a_password
 echo "Check if bootstap script works"
 docker logs mongooseim-smoke | grep "Hello from"
 
+echo "Print full logs"
+docker logs mongooseim-smoke
+
 echo "Stop and remove mongooseim-smoke container"
 docker rm -f mongooseim-smoke
 
