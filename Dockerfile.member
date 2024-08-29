@@ -1,4 +1,4 @@
-FROM phusion/baseimage:jammy-1.0.1
+FROM phusion/baseimage:jammy-1.0.4
 
 VOLUME ["/member", "/var/lib/mongooseim"]
 
@@ -15,7 +15,23 @@ RUN apt-get update && apt-get install -y \
         telnet \
         unixodbc \
         tdsodbc \
-        odbc-postgresql && \
+        odbc-postgresql \
+        curl=7.81.0-1ubuntu1.17 \
+        less=590-1ubuntu0.22.04.3 \
+        libc6=2.35-0ubuntu3.8 \
+        libc-bin=2.35-0ubuntu3.8 \
+        libcurl3-gnutls=7.81.0-1ubuntu1.17 \
+        libglib2.0-0=2.72.4-0ubuntu2.3 \
+        libglib2.0-data=2.72.4-0ubuntu2.3 \
+        libkrb5-3=1.19.2-2ubuntu0.4 \
+        libk5crypto3=1.19.2-2ubuntu0.4 \
+        libnghttp2-14=1.43.0-1ubuntu0.2 \
+        libpython3.10-minimal=3.10.12-1~22.04.5 \
+        locales=2.35-0ubuntu3.8 \
+        openssh-client=1:8.9p1-3ubuntu0.10 \
+        openssl=3.0.2-0ubuntu1.17 \
+        python3-zipp=1.0.0-3ubuntu0.1 \
+        python3.10=3.10.12-1~22.04.5 && \
         apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ARG BUILD_DATE
