@@ -8,7 +8,7 @@ Its home at GitHub is http://github.com/esl/MongooseIM.
 ## Quick start guide
 
 The docker images for [MongooseIM](https://github.com/esl/MongooseIM) are available at
-[hub.docker.com](https://hub.docker.com/r/mongooseim/mongooseim/).
+[hub.docker.com](https://hub.docker.com/r/erlangsolutions/mongooseim/).
 You only need this repo if you want to build a custom image.
 
 The `./build.sh` script is a good starting point, because it automatically performs the whole build procedure.
