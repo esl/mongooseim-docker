@@ -1,8 +1,8 @@
-ARG OTP_VSN=26.1.2
-FROM mongooseim/cimg-erlang:$OTP_VSN
+ARG OTP_VSN=27.3.4
+FROM erlangsolutions/erlang:ubuntu-noble-$OTP_VSN
 
 # required packages
-RUN sudo apt-get update && sudo apt-get install -y \
+RUN apt-get update && apt-get install -y \
     bash \
     wget \
     git \
@@ -19,7 +19,7 @@ RUN sudo apt-get update && sudo apt-get install -y \
     unixodbc-dev \
     gnupg \
     zlib1g-dev && \
-    sudo apt-get clean
+    apt-get clean
 
 COPY ./builder/build.sh /build.sh
 VOLUME /builds
