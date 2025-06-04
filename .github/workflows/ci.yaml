@@ -10,11 +10,8 @@ on:
 jobs:
   test:
     name: Build
-    runs-on: 'ubuntu-22.04'
+    runs-on: 'ubuntu-24.04'
     steps:
-      - uses: docker-practice/actions-setup-docker@master
-        with:
-          docker_version: 23.0.1
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: ./build.sh
       - run: ./smoke_test.sh
