@@ -16,7 +16,6 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     libexpat1-dev \
     libpam0g-dev \
-    unixodbc-dev \
     gnupg \
     zlib1g-dev && \
     apt-get clean
