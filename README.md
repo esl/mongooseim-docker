@@ -303,6 +303,10 @@ docker run -d --name mongooseim-postgres --net mim \
 
 Don't forget to configure the [outgoing connection pools](https://esl.github.io/MongooseDocs/latest/configuration/outgoing-connections/) in `mongooseim.toml` to connect with the services you set up!
 
+### Persisting Mnesia files
+
+Mnesia files are kept in `/var/lib/mongooseim` directory inside the container. In some cases it is desired to keep them while updating the image. In this case the `/var/lib/mongooseim` dir should be mounted to a host directory.
+
 ### Using CETS
 
 You can use CETS instead of Mnesia - see the [tutorial](https://esl.github.io/MongooseDocs/latest/tutorials/CETS-configure/) for more details.
