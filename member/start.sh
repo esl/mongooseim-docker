@@ -80,7 +80,7 @@ if [ "${BOOTSTRAP_ENABLED}" = "true" ] || [ "${BOOTSTRAP_ENABLED}" = "1" ]; then
 fi
 
 DEFAULT_CLUSTERING=0
-if [ x"${CLUSTER_WITH}" = x"" ]; then
+if [ -z "${CLUSTER_WITH}" ]; then
     # For short hostname - HOST_TAIL will be empty
     # For long hostname - HOST_TAIL will contain all of it but the leading segment
     HOST_TAIL=$(echo $NODE_HOST | sed -e 's/^[^.]*//')
@@ -89,10 +89,10 @@ if [ x"${CLUSTER_WITH}" = x"" ]; then
     DEFAULT_CLUSTERING=1
 fi
 
-if [ x"${JOIN_CLUSTER}" = x"" ] || [ "${JOIN_CLUSTER}" = "true" ] || [ "${JOIN_CLUSTER}" = "1" ]; then
+if [ "${JOIN_CLUSTER}" = "true" ] || [ "${JOIN_CLUSTER}" = "1" ]; then
     CLUSTERING_RESULT=0
     # don't cluster if default clustering is used and out suffix is -1
-    if [ $DEFAULT_CLUSTERING -eq 1 ] && [ x"${HOSTNAME_SHORT##*-}" = x"${MASTER_ORDINAL}" ]; then
+    if [ $DEFAULT_CLUSTERING -eq 1 ] && [ "${HOSTNAME_SHORT##*-}" = "${MASTER_ORDINAL}" ]; then
         echo "MongooseIM cluster primary node ${NODE}"
     elif [ ! -f "${MNESIA_DIR}/schema.DAT" ]; then
         echo "MongooseIM node ${NODE} joining ${CLUSTER_WITH}"
@@ -106,7 +106,7 @@ if [ x"${JOIN_CLUSTER}" = x"" ] || [ "${JOIN_CLUSTER}" = "true" ] || [ "${JOIN_C
         echo "MongooseIM node ${NODE} already clustered"
     fi
 
-    if [ ${CLUSTERING_RESULT} == 0 ]; then
+    if [ ${CLUSTERING_RESULT} -eq 0 ]; then
         echo "Clustered ${NODE} with ${CLUSTER_WITH}"
         run
     else
