@@ -147,19 +147,94 @@ mongooseim-1
 Now we can run the container:
 
 ```bash
-docker run -dt -h mongooseim-1 --name mongooseim-1 -p 5222:5222 -v `pwd`/mongooseim-1:/member mongooseim
+docker run -dt -h mongooseim-1 --name mongooseim-1 -p 5222:5222 -v ./mongooseim-1:/member mongooseim
 ```
 
 The server will use the customised configuration files.
 There is also a `vm.dist.args` file which can be overwritten in the same way.
 
+## Database setup
+
+MongooseIM can be integrated with various databases and other external services.
+For example, let's run a [PostgreSQL](https://hub.docker.com/_/postgres/) container:
+
+```bash
+docker run -d --name mongooseim-postgres --net mim \
+       -e POSTGRES_PASSWORD=mongooseim -e POSTGRES_USER=mongooseim \
+       -v ${PATH_TO_MONGOOSEIM_PGSQL_FILE}:/docker-entrypoint-initdb.d/pgsql.sql:ro \
+       -p 5432:5432 postgres
+```
+
+`${PATH_TO_MONGOOSEIM_PGSQL_FILE}` is an absolute path to `priv/pgsql.sql`, which can be found in the MongooseIM repo.
+
+Don't forget to configure the [outgoing connection pools](https://esl.github.io/MongooseDocs/latest/configuration/outgoing-connections/) in `mongooseim.toml` to connect with the services you set up!
+
+### Persisting Mnesia files
+
+Mnesia files are kept in `/var/lib/mongooseim` directory inside the container. In some cases it is desired to keep them while updating the image.
+In this case the `/var/lib/mongooseim` dir should be mounted to a host directory.
+
+### Using CETS
+
+You can use CETS, which is the recommended backend for transient data, instead of Mnesia - see the [tutorial](https://esl.github.io/MongooseDocs/latest/tutorials/CETS-configure/) for more details.
+
 ## Setting up a cluster
 
-There are two methods of clustering: the default, automatic one and a method where you have more control over the cluster formation.
+There are two methods of clustering: CETS (recommended) and Mnesia, which can be automatic (default) or manual, giving move control over the cluster formation.
 
-### Default clustering
+### CETS
 
-To use default clustering behaviour, your containers need both container names (`--name` option) and host names (`-h` option) with the `-n` suffix,
+Ensure that outgoing pools are configured with an RDBMS so that CETS can retrieve a list of MongooseIM nodes using the same relational database and cluster them together.
+
+Create a user-defined bridge network and start two nodes connected to it:
+
+```bash
+docker network create mim
+docker run -dt --net mim --name mongooseim-1 -v ./mongooseim-1:/member mongooseim
+docker run -dt --net mim --name mongooseim-2 -v ./mongooseim-2:/member mongooseim
+```
+
+The nodes should already form a cluster. Let's check it:
+
+```bash
+$ docker exec mongooseim-1 /usr/lib/mongooseim/bin/mongooseimctl cets systemInfo
+{
+  "data" : {
+    "cets" : {
+      "systemInfo" : {
+        (...)
+        "availableNodes" : [
+          "mongooseim@b5b6a9ac9df8",
+          "mongooseim@f04c2070b082"
+        ]
+      }
+    }
+  }
+}
+
+$ docker exec mongooseim-2 /usr/lib/mongooseim/bin/mongooseimctl cets systemInfo
+{
+  "data" : {
+    "cets" : {
+      "systemInfo" : {
+        (...)
+        "availableNodes" : [
+          "mongooseim@b5b6a9ac9df8",
+          "mongooseim@f04c2070b082"
+        ]
+      }
+    }
+  }
+}
+```
+
+#### File-based discovery
+
+It is possible to read a list of nodes to cluster from a file. See [CETS with the file discovery backend](https://esl.github.io/MongooseDocs/latest/tutorials/CETS-configure/#cets-with-the-file-discovery-backend).
+
+### Mnesia
+
+To use the automatic clustering method, your containers need both container names (`--name` option) and host names (`-h` option) with the `-n` suffix,
 where `n` are consecutive integers starting with `1` (configurable with `MASTER_ORDINAL` env variable), e.g. `mongooseim-1`, `mongooseim-2` and so on.
 Make sure you have started a node with `-${MASTER_ORDINAL}` suffix first (e.g. `-h mongooseim-1` and `--name mongooseim-1`), as all the other nodes will connect to it when joining the cluster.
 
@@ -183,8 +258,8 @@ Few things are important here:
 Create a user-defined bridge network and start two nodes connected to it:
 ```
 docker network create mim
-docker run -dt --net mim -h mongooseim-1 --name mongooseim-1 mongooseim
-docker run -dt --net mim -h mongooseim-2 --name mongooseim-2 mongooseim
+docker run -dt --net mim -h mongooseim-1 --name mongooseim-1 -e JOIN_CLUSTER=true mongooseim
+docker run -dt --net mim -h mongooseim-2 --name mongooseim-2 -e JOIN_CLUSTER=true mongooseim
 ```
 
 The nodes should already form a cluster. Let's check it:
@@ -233,21 +308,20 @@ Default clustering may work as part of Kubernetes StatefulSet deployment with on
   Please note that for `pod` domain to work you have to have headless service running that matches your `StatefulSet`
   (see https://kubernetes.io/docs/concepts/services-networking/service/#headless-services)
 
-### Manual clustering
+#### Manual clustering
 
 With the manual clustering method, you need to explicitly specify the name of the node to join the cluster with via the `CLUSTER_WITH` environment variable.
-You may also disable clustering during container startup altogether by setting `JOIN_CLUSTER=false` variable (it's set to `true` by default).
 
-#### Examples
+##### Examples
 
 Let's try providing a name of the node to join the cluster with manually:
 
 ```bash
-docker run -dt --net mim -h first-node --name first-node -e JOIN_CLUSTER=false mongooseim
-docker run -dt --net mim -h second-node --name second-node -e CLUSTER_WITH=mongooseim@first-node mongooseim
+docker run -dt --net mim -h first-node --name first-node mongooseim
+docker run -dt --net mim -h second-node --name second-node -e JOIN_CLUSTER=true -e CLUSTER_WITH=mongooseim@first-node mongooseim
 ```
 
-The first command starts a node and tells it not to try to join any clusters (as there are no other nodes).
+The first command starts a node which, by default, does not to try to join any clusters (since `JOIN_CLUSTER` is set to `false` by default).
 We then tell the second node to join the cluster with the first node.
 
 You can now check that the nodes have formed the cluster:
@@ -282,66 +356,6 @@ $ docker exec second-node /usr/lib/mongooseim/bin/mongooseimctl mnesia systemInf
           "key" : "running_db_nodes"
         }
       ]
-    }
-  }
-}
-```
-
-## Database setup
-
-MongooseIM can be integrated with various databases and other external services.
-For example, let's run a [PostgreSQL](https://hub.docker.com/_/postgres/) container:
-
-```bash
-docker run -d --name mongooseim-postgres --net mim \
-       -e POSTGRES_PASSWORD=mongooseim -e POSTGRES_USER=mongooseim \
-       -v ${PATH_TO_MONGOOSEIM_PGSQL_FILE}:/docker-entrypoint-initdb.d/pgsql.sql:ro \
-       -p 5432:5432 postgres
-```
-
-`${PATH_TO_MONGOOSEIM_PGSQL_FILE}` is an absolute path to `priv/pgsql.sql`, which can be found in the MongooseIM repo.
-
-Don't forget to configure the [outgoing connection pools](https://esl.github.io/MongooseDocs/latest/configuration/outgoing-connections/) in `mongooseim.toml` to connect with the services you set up!
-
-### Using CETS
-
-You can use CETS instead of Mnesia - see the [tutorial](https://esl.github.io/MongooseDocs/latest/tutorials/CETS-configure/) for more details.
-You will need to start all nodes with `JOIN_CLUSTER=false`.
-
-```bash
-docker run -dt --net mim -h mongooseim-1 --name mongooseim-1 -v `pwd`/mongooseim-1:/member -e JOIN_CLUSTER=false mongooseim
-docker run -dt --net mim -h mongooseim-2 --name mongooseim-2 -v `pwd`/mongooseim-2:/member -e JOIN_CLUSTER=false mongooseim
-```
-
-You can check the CETS status on both nodes to see if the clustering is successful:
-
-```bash
-$ docker exec mongooseim-1 /usr/lib/mongooseim/bin/mongooseimctl cets systemInfo
-{
-  "data" : {
-    "cets" : {
-      "systemInfo" : {
-        (...)
-        "availableNodes" : [
-          "mongooseim@mongooseim-1",
-          "mongooseim@mongooseim-2"
-        ]
-      }
-    }
-  }
-}
-
-$ docker exec mongooseim-2 /usr/lib/mongooseim/bin/mongooseimctl cets systemInfo
-{
-  "data" : {
-    "cets" : {
-      "systemInfo" : {
-        (...)
-        "availableNodes" : [
-          "mongooseim@mongooseim-2",
-          "mongooseim@mongooseim-1"
-        ]
-      }
     }
   }
 }
